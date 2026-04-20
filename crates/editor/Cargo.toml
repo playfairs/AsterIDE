@@ -9,3 +9,9 @@ core = { path = "../core" }
 eframe = "0.34.1"
 egui = "0.34.1"
 rfd = "0.14"
+regex = "1.11"
+walkdir = "2.5"
+
+grep = "0.3"
+grep-searcher = "0.1"
+grep-regex = "0.1"

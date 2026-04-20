@@ -11,6 +11,9 @@ pub struct Settings {
     pub auto_save_interval: u64,
     pub sidebar_visible: bool,
     pub status_bar_visible: bool,
+    pub search_ignore_dirs_enabled: bool,
+    pub search_ignored_dirs: String,
+    pub search_min_chars: usize,
 }
 
 impl Default for Settings {
@@ -27,6 +30,9 @@ impl Default for Settings {
             auto_save_interval: 30,
             sidebar_visible: true,
             status_bar_visible: true,
+            search_ignore_dirs_enabled: true,
+            search_ignored_dirs: ".git, node_modules, venv, .venv, target, dist, build, .next, .cache, __pycache__, .idea, .vscode".to_string(),
+            search_min_chars: 2,
         }
     }
 }
@@ -92,6 +98,30 @@ impl Settings {
                 ui.label("Interface");
                 ui.checkbox(&mut self.sidebar_visible, "Show sidebar");
                 ui.checkbox(&mut self.status_bar_visible, "Show status bar");
+            });
+            
+            ui.add_space(10.0);
+            
+            ui.group(|ui| {
+                ui.label("Search");
+                ui.checkbox(&mut self.search_ignore_dirs_enabled, "Ignore certain directories");
+                
+                if self.search_ignore_dirs_enabled {
+                    ui.add_space(5.0);
+                    ui.label("Directories to ignore (comma-separated, * for wildcard):");
+                    ui.text_edit_multiline(&mut self.search_ignored_dirs);
+                    ui.label(
+                        egui::RichText::new("Examples: .git, node_modules, *venv (matches .venv, venv, myvenv)")
+                            .size(10.0)
+                            .color(egui::Color32::GRAY)
+                    );
+                }
+                
+                ui.add_space(5.0);
+                ui.horizontal(|ui| {
+                    ui.label("Minimum characters for auto-search:");
+                    ui.add(egui::DragValue::new(&mut self.search_min_chars).speed(1).clamp_range(1..=10));
+                });
             });
         });
     }

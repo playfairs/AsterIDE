@@ -1,10 +1,11 @@
 use core::editor::Editor;
 use std::path::PathBuf;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum TabType {
     File,
     Settings,
+    SearchResults,
 }
 
 pub struct Tab {
@@ -51,7 +52,6 @@ impl TabManager {
     }
     
     pub fn open_settings_tab(&mut self) {
-        // Check if settings tab already exists
         for (i, tab) in self.tabs.iter().enumerate() {
             if tab.tab_type == TabType::Settings {
                 self.active_tab = i;
@@ -69,6 +69,30 @@ impl TabManager {
             editor: Editor::new(),
             is_modified: false,
             tab_type: TabType::Settings,
+        };
+        
+        self.tabs.push(tab);
+        self.active_tab = self.tabs.len() - 1;
+    }
+
+    pub fn open_search_tab(&mut self) {
+        for (i, tab) in self.tabs.iter().enumerate() {
+            if tab.tab_type == TabType::SearchResults {
+                self.active_tab = i;
+                return;
+            }
+        }
+        
+        let id = self.next_id;
+        self.next_id += 1;
+        
+        let tab = Tab {
+            id,
+            name: "Search Results".to_string(),
+            path: None,
+            editor: Editor::new(),
+            is_modified: false,
+            tab_type: TabType::SearchResults,
         };
         
         self.tabs.push(tab);
@@ -132,6 +156,14 @@ impl TabManager {
 
     pub fn current_editor_mut(&mut self) -> Option<&mut Editor> {
         self.active_tab_mut().map(|t| &mut t.editor)
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Tab> {
+        self.tabs.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Tab> {
+        self.tabs.iter_mut()
     }
 }
 
