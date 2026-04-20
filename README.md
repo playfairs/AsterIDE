@@ -1,6 +1,6 @@
 # AsterIDE 🌸
 
-Minimal Text Editor written in Rust, made for Femboys.
+**A Simple Text Editor** written in **Rust**, made for Femboys 🌸
 
 ---
 
