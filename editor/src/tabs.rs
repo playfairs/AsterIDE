@@ -1,0 +1,142 @@
+use core::editor::Editor;
+use std::path::PathBuf;
+
+#[derive(PartialEq)]
+pub enum TabType {
+    File,
+    Settings,
+}
+
+pub struct Tab {
+    pub id: usize,
+    pub name: String,
+    pub path: Option<PathBuf>,
+    pub editor: Editor,
+    pub is_modified: bool,
+    pub tab_type: TabType,
+}
+
+pub struct TabManager {
+    pub tabs: Vec<Tab>,
+    pub active_tab: usize,
+    next_id: usize,
+}
+
+impl TabManager {
+    pub fn new() -> Self {
+        let mut manager = Self {
+            tabs: Vec::new(),
+            active_tab: 0,
+            next_id: 1,
+        };
+        manager.new_tab();
+        manager
+    }
+
+    pub fn new_tab(&mut self) {
+        let id = self.next_id;
+        self.next_id += 1;
+        
+        let tab = Tab {
+            id,
+            name: format!("untitled-{}", id),
+            path: None,
+            editor: Editor::new(),
+            is_modified: false,
+            tab_type: TabType::File,
+        };
+        
+        self.tabs.push(tab);
+        self.active_tab = self.tabs.len() - 1;
+    }
+    
+    pub fn open_settings_tab(&mut self) {
+        // Check if settings tab already exists
+        for (i, tab) in self.tabs.iter().enumerate() {
+            if tab.tab_type == TabType::Settings {
+                self.active_tab = i;
+                return;
+            }
+        }
+        
+        let id = self.next_id;
+        self.next_id += 1;
+        
+        let tab = Tab {
+            id,
+            name: "Settings".to_string(),
+            path: None,
+            editor: Editor::new(),
+            is_modified: false,
+            tab_type: TabType::Settings,
+        };
+        
+        self.tabs.push(tab);
+        self.active_tab = self.tabs.len() - 1;
+    }
+
+    pub fn open_file(&mut self, path: PathBuf, content: String) {
+        let id = self.next_id;
+        self.next_id += 1;
+        
+        let name = path.file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| "untitled".to_string());
+        
+        let mut editor = Editor::new();
+        editor.buffer = core::buffer::Buffer::from_str(&content);
+        
+        let tab = Tab {
+            id,
+            name,
+            path: Some(path),
+            editor,
+            is_modified: false,
+            tab_type: TabType::File,
+        };
+        
+        self.tabs.push(tab);
+        self.active_tab = self.tabs.len() - 1;
+    }
+
+    pub fn close_tab(&mut self, index: usize) {
+        if self.tabs.len() > 1 && index < self.tabs.len() {
+            self.tabs.remove(index);
+            if self.active_tab >= self.tabs.len() {
+                self.active_tab = self.tabs.len() - 1;
+            }
+        }
+    }
+
+    pub fn close_active_tab(&mut self) {
+        self.close_tab(self.active_tab);
+    }
+
+    pub fn set_active(&mut self, index: usize) {
+        if index < self.tabs.len() {
+            self.active_tab = index;
+        }
+    }
+
+    pub fn active_tab(&self) -> Option<&Tab> {
+        self.tabs.get(self.active_tab)
+    }
+
+    pub fn active_tab_mut(&mut self) -> Option<&mut Tab> {
+        self.tabs.get_mut(self.active_tab)
+    }
+
+    pub fn current_editor(&self) -> Option<&Editor> {
+        self.active_tab().map(|t| &t.editor)
+    }
+
+    pub fn current_editor_mut(&mut self) -> Option<&mut Editor> {
+        self.active_tab_mut().map(|t| &mut t.editor)
+    }
+}
+
+impl Default for TabManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}

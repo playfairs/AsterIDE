@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "core",
+    "editor",
+    "lsp",
+    "plugins",
+    "shared"
+]
+
+resolver = "2"

@@ -1,0 +1,11 @@
+[package]
+name = "editor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+core = { path = "../core" }
+
+eframe = "0.34.1"
+egui = "0.34.1"
+rfd = "0.14"
