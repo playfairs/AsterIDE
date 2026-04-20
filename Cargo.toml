@@ -1,10 +1,10 @@
 [workspace]
 members = [
-    "core",
-    "editor",
-    "lsp",
-    "plugins",
-    "shared"
+    "crates/core",
+    "crates/editor",
+    "crates/lsp",
+    "crates/plugins",
+    "crates/shared"
 ]
 
 resolver = "2"
