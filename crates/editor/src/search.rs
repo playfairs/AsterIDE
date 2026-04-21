@@ -87,7 +87,7 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             ui.label(
                 egui::RichText::new("🔍")
                     .size(16.0)
-                    .color(CherryBlossomTheme::TEXT_MUTED)
+                    .color(CherryBlossomTheme::TEXT_MUTED),
             );
 
             ui.add_space(8.0);
@@ -96,15 +96,15 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                 egui::vec2(ui.available_width() - 200.0, 28.0),
                 egui::TextEdit::singleline(&mut state.query)
                     .hint_text("Search...")
-                    .font(egui::FontId::proportional(14.0))
+                    .font(egui::FontId::proportional(14.0)),
             );
-            
+
             if search_response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                 ui.ctx().data_mut(|d| {
                     d.insert_temp(egui::Id::new("global_search_triggered"), true);
                 });
             }
-            
+
             if search_response.changed() && state.query.len() >= min_chars {
                 ui.ctx().data_mut(|d| {
                     d.insert_temp(egui::Id::new("global_search_triggered"), true);
@@ -118,9 +118,13 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             } else {
                 CherryBlossomTheme::TEXT_MUTED
             };
-            if ui.add(egui::Label::new(
-                egui::RichText::new("Aa").color(case_color).strong()
-            ).sense(egui::Sense::click())).clicked() {
+            if ui
+                .add(
+                    egui::Label::new(egui::RichText::new("Aa").color(case_color).strong())
+                        .sense(egui::Sense::click()),
+                )
+                .clicked()
+            {
                 state.case_sensitive = !state.case_sensitive;
             }
 
@@ -129,9 +133,13 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             } else {
                 CherryBlossomTheme::TEXT_MUTED
             };
-            if ui.add(egui::Label::new(
-                egui::RichText::new("\\b").color(word_color).monospace()
-            ).sense(egui::Sense::click())).clicked() {
+            if ui
+                .add(
+                    egui::Label::new(egui::RichText::new("\\b").color(word_color).monospace())
+                        .sense(egui::Sense::click()),
+                )
+                .clicked()
+            {
                 state.whole_word = !state.whole_word;
             }
 
@@ -140,9 +148,13 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             } else {
                 CherryBlossomTheme::TEXT_MUTED
             };
-            if ui.add(egui::Label::new(
-                egui::RichText::new(".*").color(regex_color).monospace()
-            ).sense(egui::Sense::click())).clicked() {
+            if ui
+                .add(
+                    egui::Label::new(egui::RichText::new(".*").color(regex_color).monospace())
+                        .sense(egui::Sense::click()),
+                )
+                .clicked()
+            {
                 state.use_regex = !state.use_regex;
             }
         });
@@ -152,14 +164,14 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             ui.label(
                 egui::RichText::new("↔")
                     .size(16.0)
-                    .color(CherryBlossomTheme::TEXT_MUTED)
+                    .color(CherryBlossomTheme::TEXT_MUTED),
             );
             ui.add_space(8.0);
             ui.add_sized(
                 egui::vec2(ui.available_width() - 100.0, 28.0),
                 egui::TextEdit::singleline(&mut state.replace)
                     .hint_text("Replace...")
-                    .font(egui::FontId::proportional(14.0))
+                    .font(egui::FontId::proportional(14.0)),
             );
         });
 
@@ -173,9 +185,9 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                 egui::Button::new(
                     egui::RichText::new("Search")
                         .color(CherryBlossomTheme::BG_DARKEST)
-                        .strong()
+                        .strong(),
                 )
-                .fill(CherryBlossomTheme::ACCENT_PINK)
+                .fill(CherryBlossomTheme::ACCENT_PINK),
             );
             if search_btn.clicked() {
                 ui.ctx().data_mut(|d| {
@@ -185,10 +197,14 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
 
             ui.add_space(8.0);
 
-            if ui.add_sized(
-                egui::vec2(80.0, button_height),
-                egui::Button::new("Replace All")
-            ).clicked() && !state.replace.is_empty() {
+            if ui
+                .add_sized(
+                    egui::vec2(80.0, button_height),
+                    egui::Button::new("Replace All"),
+                )
+                .clicked()
+                && !state.replace.is_empty()
+            {
                 ui.ctx().data_mut(|d| {
                     d.insert_temp(egui::Id::new("global_replace_all_triggered"), true);
                 });
@@ -199,13 +215,13 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                     ui.label(
                         egui::RichText::new(format!("{} matches", state.results.len()))
                             .color(CherryBlossomTheme::TEXT_MUTED)
-                            .size(12.0)
+                            .size(12.0),
                     );
                 } else if !state.query.is_empty() {
                     ui.label(
                         egui::RichText::new("No results")
                             .color(CherryBlossomTheme::TEXT_MUTED)
-                            .size(12.0)
+                            .size(12.0),
                     );
                 }
             });
@@ -221,7 +237,7 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                         ui.label(
                             egui::RichText::new("Enter a search query to find across open files")
                                 .color(CherryBlossomTheme::TEXT_MUTED)
-                                .size(14.0)
+                                .size(14.0),
                         );
                     });
                 }
@@ -232,15 +248,12 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                     if current_file != Some(&result.file_path) {
                         ui.add_space(8.0);
                         ui.horizontal(|ui| {
-                            ui.label(
-                                egui::RichText::new("📄 ")
-                                    .size(12.0)
-                            );
+                            ui.label(egui::RichText::new("📄 ").size(12.0));
                             ui.label(
                                 egui::RichText::new(&result.file_path)
                                     .color(CherryBlossomTheme::ACCENT_PINK)
                                     .size(12.0)
-                                    .strong()
+                                    .strong(),
                             );
                         });
                         ui.separator();
@@ -266,35 +279,47 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                                         egui::RichText::new(format!("{}", result.line))
                                             .color(CherryBlossomTheme::TEXT_MUTED)
                                             .monospace()
-                                            .size(12.0)
-                                    )
+                                            .size(12.0),
+                                    ),
                                 );
 
                                 ui.add_space(8.0);
 
-                                let before = &result.line_content[..result.start_col.saturating_sub(1)];
-                                let matched = &result.line_content[
-                                    result.start_col.saturating_sub(1)
-                                        ..result.end_col.saturating_sub(1).min(result.line_content.len())
-                                ];
-                                let after = &result.line_content[
-                                    result.end_col.saturating_sub(1).min(result.line_content.len())..
-                                ];
+                                let before =
+                                    &result.line_content[..result.start_col.saturating_sub(1)];
+                                let matched =
+                                    &result.line_content[result.start_col.saturating_sub(1)
+                                        ..result
+                                            .end_col
+                                            .saturating_sub(1)
+                                            .min(result.line_content.len())];
+                                let after = &result.line_content[result
+                                    .end_col
+                                    .saturating_sub(1)
+                                    .min(result.line_content.len())..];
 
                                 ui.horizontal(|ui| {
-                                    ui.monospace(egui::RichText::new(before)
-                                        .color(CherryBlossomTheme::TEXT_SECONDARY)
-                                        .size(12.0));
-                                    ui.monospace(egui::RichText::new(matched)
-                                        .color(CherryBlossomTheme::ACCENT_HOT)
-                                        .strong()
-                                        .size(12.0));
-                                    ui.monospace(egui::RichText::new(after)
-                                        .color(CherryBlossomTheme::TEXT_SECONDARY)
-                                        .size(12.0));
+                                    ui.monospace(
+                                        egui::RichText::new(before)
+                                            .color(CherryBlossomTheme::TEXT_SECONDARY)
+                                            .size(12.0),
+                                    );
+                                    ui.monospace(
+                                        egui::RichText::new(matched)
+                                            .color(CherryBlossomTheme::ACCENT_HOT)
+                                            .strong()
+                                            .size(12.0),
+                                    );
+                                    ui.monospace(
+                                        egui::RichText::new(after)
+                                            .color(CherryBlossomTheme::TEXT_SECONDARY)
+                                            .size(12.0),
+                                    );
                                 });
-                            }).response
-                        }).response;
+                            })
+                            .response
+                        })
+                        .response;
 
                     if response.clicked() {
                         state.current_result = i;
@@ -316,13 +341,13 @@ pub fn show_search_button(ui: &mut egui::Ui) {
         ui.label(
             egui::RichText::new("🔍")
                 .size(32.0)
-                .color(CherryBlossomTheme::TEXT_MUTED)
+                .color(CherryBlossomTheme::TEXT_MUTED),
         );
         ui.add_space(10.0);
         ui.label(
             egui::RichText::new("Click the search icon above\nor press Ctrl+Shift+F")
                 .color(CherryBlossomTheme::TEXT_MUTED)
-                .size(11.0)
+                .size(11.0),
         );
     });
 }

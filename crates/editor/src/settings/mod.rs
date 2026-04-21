@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Copy, Serialize, Deserialize)]
 pub enum SettingsCategory {
@@ -140,7 +140,7 @@ impl Settings {
                 egui::RichText::new(self.selected_category.name())
                     .size(18.0)
                     .strong()
-                    .color(CherryBlossomTheme::TEXT_PRIMARY)
+                    .color(CherryBlossomTheme::TEXT_PRIMARY),
             );
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -165,7 +165,7 @@ impl Settings {
                 ui.label(
                     egui::RichText::new(format!("{} / {} Settings", matches, total_count))
                         .size(12.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED)
+                        .color(CherryBlossomTheme::TEXT_MUTED),
                 );
 
                 ui.add_space(16.0);
@@ -173,7 +173,7 @@ impl Settings {
                 ui.add(
                     egui::TextEdit::singleline(&mut self.search_query)
                         .hint_text("Search settings...")
-                        .desired_width(180.0)
+                        .desired_width(180.0),
                 );
             });
         });
@@ -191,7 +191,11 @@ impl Settings {
                 |ui| {
                     ui.set_width(sidebar_width);
 
-                    for category in [SettingsCategory::Editor, SettingsCategory::Workbench, SettingsCategory::Search] {
+                    for category in [
+                        SettingsCategory::Editor,
+                        SettingsCategory::Workbench,
+                        SettingsCategory::Search,
+                    ] {
                         let is_selected = self.selected_category == category;
 
                         let (rect, response) = ui.allocate_exact_size(
@@ -251,11 +255,15 @@ impl Settings {
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| {
                     ui.add_space(8.0);
-                    egui::ScrollArea::vertical().show(ui, |ui| {
-                        match self.selected_category {
-                            SettingsCategory::Editor => self.show_editor_settings(ui, has_search, &self.search_query.clone()),
-                            SettingsCategory::Workbench => self.show_workbench_settings(ui, has_search, &self.search_query.clone()),
-                            SettingsCategory::Search => self.show_search_settings(ui, has_search, &self.search_query.clone()),
+                    egui::ScrollArea::vertical().show(ui, |ui| match self.selected_category {
+                        SettingsCategory::Editor => {
+                            self.show_editor_settings(ui, has_search, &self.search_query.clone())
+                        }
+                        SettingsCategory::Workbench => {
+                            self.show_workbench_settings(ui, has_search, &self.search_query.clone())
+                        }
+                        SettingsCategory::Search => {
+                            self.show_search_settings(ui, has_search, &self.search_query.clone())
                         }
                     });
                 },
@@ -274,11 +282,20 @@ impl Settings {
         let mut count = 0;
 
         let setting_names = [
-            "show line numbers", "word wrap", "show whitespace",
-            "font size", "tab size", "use spaces",
-            "vim mode", "auto save", "auto save interval",
-            "sidebar", "status bar",
-            "ignore directories", "ignored directories", "auto-search threshold",
+            "show line numbers",
+            "word wrap",
+            "show whitespace",
+            "font size",
+            "tab size",
+            "use spaces",
+            "vim mode",
+            "auto save",
+            "auto save interval",
+            "sidebar",
+            "status bar",
+            "ignore directories",
+            "ignored directories",
+            "auto-search threshold",
         ];
 
         for name in setting_names {
@@ -294,57 +311,132 @@ impl Settings {
         use crate::theme::CherryBlossomTheme;
         let query = query.to_lowercase();
 
-        if !has_search || self.matches_search(&query, &["display", "line numbers", "word wrap", "whitespace"]) {
+        if !has_search
+            || self.matches_search(
+                &query,
+                &["display", "line numbers", "word wrap", "whitespace"],
+            )
+        {
             self.setting_card(ui, "Display", |ui, settings| {
-                settings.cozy_row_filtered(ui, has_search, &query, "Show line numbers", "Display line numbers in the editor", |ui, settings| {
-                    ui.checkbox(&mut settings.show_line_numbers, "");
-                });
-                settings.cozy_row_filtered(ui, has_search, &query, "Word wrap", "Wrap lines to fit the viewport", |ui, settings| {
-                    ui.checkbox(&mut settings.word_wrap, "");
-                });
-                settings.cozy_row_filtered(ui, has_search, &query, "Show whitespace", "Render whitespace characters", |ui, settings| {
-                    ui.checkbox(&mut settings.show_whitespace, "");
-                });
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Show line numbers",
+                    "Display line numbers in the editor",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.show_line_numbers, "");
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Word wrap",
+                    "Wrap lines to fit the viewport",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.word_wrap, "");
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Show whitespace",
+                    "Render whitespace characters",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.show_whitespace, "");
+                    },
+                );
             });
             ui.add_space(12.0);
         }
 
         if !has_search || self.matches_search(&query, &["font", "indentation", "tab", "spaces"]) {
             self.setting_card(ui, "Font & Indentation", |ui, settings| {
-                settings.cozy_row_filtered(ui, has_search, &query, "Font size", "Editor font size in pixels", |ui, settings| {
-                    ui.add(egui::Slider::new(&mut settings.font_size, 8.0..=32.0)
-                        .show_value(true)
-                        .text("px"));
-                });
-                settings.cozy_row_filtered(ui, has_search, &query, "Tab size", "Number of spaces per tab", |ui, settings| {
-                    ui.add(egui::Slider::new(&mut settings.tab_size, 2..=8)
-                        .show_value(true)
-                        .text("spaces"));
-                });
-                settings.cozy_row_filtered(ui, has_search, &query, "Use spaces", "Insert spaces when pressing Tab", |ui, settings| {
-                    ui.checkbox(&mut settings.use_spaces, "");
-                });
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Font size",
+                    "Editor font size in pixels",
+                    |ui, settings| {
+                        ui.add(
+                            egui::Slider::new(&mut settings.font_size, 8.0..=32.0)
+                                .show_value(true)
+                                .text("px"),
+                        );
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Tab size",
+                    "Number of spaces per tab",
+                    |ui, settings| {
+                        ui.add(
+                            egui::Slider::new(&mut settings.tab_size, 2..=8)
+                                .show_value(true)
+                                .text("spaces"),
+                        );
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Use spaces",
+                    "Insert spaces when pressing Tab",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.use_spaces, "");
+                    },
+                );
             });
             ui.add_space(12.0);
         }
 
-        if !has_search || self.matches_search(&query, &["behavior", "vim", "auto save", "interval"]) {
+        if !has_search || self.matches_search(&query, &["behavior", "vim", "auto save", "interval"])
+        {
             self.setting_card(ui, "Behavior", |ui, settings| {
-                settings.cozy_row_filtered(ui, has_search, &query, "Vim mode", "Enable vim-style keybindings", |ui, settings| {
-                    ui.checkbox(&mut settings.vim_mode, "");
-                });
-                settings.cozy_row_filtered(ui, has_search, &query, "Auto save", "Automatically save files", |ui, settings| {
-                    ui.checkbox(&mut settings.auto_save, "");
-                });
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Vim mode",
+                    "Enable vim-style keybindings",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.vim_mode, "");
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Auto save",
+                    "Automatically save files",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.auto_save, "");
+                    },
+                );
                 if settings.auto_save {
                     ui.add_space(8.0);
-                    settings.cozy_row_filtered(ui, has_search, &query, "Auto save interval", "Seconds between auto-saves", |ui, settings| {
-                        ui.horizontal(|ui| {
-                            ui.add(egui::Slider::new(&mut settings.auto_save_interval, 5..=300)
-                                .show_value(true)
-                                .text("sec"));
-                        });
-                    });
+                    settings.cozy_row_filtered(
+                        ui,
+                        has_search,
+                        &query,
+                        "Auto save interval",
+                        "Seconds between auto-saves",
+                        |ui, settings| {
+                            ui.horizontal(|ui| {
+                                ui.add(
+                                    egui::Slider::new(&mut settings.auto_save_interval, 5..=300)
+                                        .show_value(true)
+                                        .text("sec"),
+                                );
+                            });
+                        },
+                    );
                 }
             });
         }
@@ -356,12 +448,26 @@ impl Settings {
 
         if !has_search || self.matches_search(&query, &["appearance", "sidebar", "status bar"]) {
             self.setting_card(ui, "Appearance", |ui, settings| {
-                settings.cozy_row_filtered(ui, has_search, &query, "Sidebar", "Show the left sidebar", |ui, settings| {
-                    ui.checkbox(&mut settings.sidebar_visible, "");
-                });
-                settings.cozy_row_filtered(ui, has_search, &query, "Status bar", "Show the bottom status bar", |ui, settings| {
-                    ui.checkbox(&mut settings.status_bar_visible, "");
-                });
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Sidebar",
+                    "Show the left sidebar",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.sidebar_visible, "");
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Status bar",
+                    "Show the bottom status bar",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.status_bar_visible, "");
+                    },
+                );
             });
         }
     }
@@ -371,39 +477,55 @@ impl Settings {
         let query = query.to_lowercase();
 
         self.setting_card(ui, "Search Behavior", |ui, settings| {
-            settings.cozy_row_filtered(ui, has_search, &query, "Ignore directories", "Exclude certain directories from search", |ui, settings| {
-                ui.checkbox(&mut settings.search_ignore_dirs_enabled, "");
-            });
+            settings.cozy_row_filtered(
+                ui,
+                has_search,
+                &query,
+                "Ignore directories",
+                "Exclude certain directories from search",
+                |ui, settings| {
+                    ui.checkbox(&mut settings.search_ignore_dirs_enabled, "");
+                },
+            );
             if settings.search_ignore_dirs_enabled {
                 ui.add_space(16.0);
                 ui.label(
                     egui::RichText::new("Ignored patterns")
                         .size(13.0)
-                        .color(CherryBlossomTheme::TEXT_PRIMARY)
+                        .color(CherryBlossomTheme::TEXT_PRIMARY),
                 );
                 ui.label(
                     egui::RichText::new("Comma-separated, use * for wildcards")
                         .size(11.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED)
+                        .color(CherryBlossomTheme::TEXT_MUTED),
                 );
                 ui.add_space(4.0);
                 ui.add(
                     egui::TextEdit::multiline(&mut settings.search_ignored_dirs)
                         .desired_rows(3)
-                        .desired_width(ui.available_width())
+                        .desired_width(ui.available_width()),
                 );
                 ui.label(
                     egui::RichText::new("Examples: .git, node_modules, *venv")
                         .size(11.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED)
+                        .color(CherryBlossomTheme::TEXT_MUTED),
                 );
                 ui.add_space(16.0);
             }
-            settings.cozy_row_filtered(ui, has_search, &query, "Auto-search threshold", "Min chars before search triggers", |ui, settings| {
-                ui.add(egui::DragValue::new(&mut settings.search_min_chars)
-                    .speed(1)
-                    .clamp_range(1..=10));
-            });
+            settings.cozy_row_filtered(
+                ui,
+                has_search,
+                &query,
+                "Auto-search threshold",
+                "Min chars before search triggers",
+                |ui, settings| {
+                    ui.add(
+                        egui::DragValue::new(&mut settings.search_min_chars)
+                            .speed(1)
+                            .clamp_range(1..=10),
+                    );
+                },
+            );
         });
     }
 
@@ -411,7 +533,12 @@ impl Settings {
         keywords.iter().any(|kw| kw.to_lowercase().contains(query))
     }
 
-    fn setting_card(&mut self, ui: &mut egui::Ui, title: &str, content: impl FnOnce(&mut egui::Ui, &mut Settings)) {
+    fn setting_card(
+        &mut self,
+        ui: &mut egui::Ui,
+        title: &str,
+        content: impl FnOnce(&mut egui::Ui, &mut Settings),
+    ) {
         use crate::theme::CherryBlossomTheme;
 
         let card_margin = 16.0;
@@ -428,7 +555,7 @@ impl Settings {
                     egui::RichText::new(title)
                         .size(14.0)
                         .strong()
-                        .color(CherryBlossomTheme::TEXT_PRIMARY)
+                        .color(CherryBlossomTheme::TEXT_PRIMARY),
                 );
 
                 ui.add_space(12.0);
@@ -436,7 +563,7 @@ impl Settings {
                 ui.painter().line_segment(
                     [
                         ui.cursor().left_center(),
-                        ui.cursor().left_center() + egui::vec2(ui.available_width(), 0.0)
+                        ui.cursor().left_center() + egui::vec2(ui.available_width(), 0.0),
                     ],
                     egui::Stroke::new(1.0, CherryBlossomTheme::BG_LIGHT),
                 );
@@ -448,7 +575,13 @@ impl Settings {
         ui.add_space(12.0);
     }
 
-    fn cozy_row(&mut self, ui: &mut egui::Ui, title: &str, description: &str, control: impl FnOnce(&mut egui::Ui, &mut Settings)) {
+    fn cozy_row(
+        &mut self,
+        ui: &mut egui::Ui,
+        title: &str,
+        description: &str,
+        control: impl FnOnce(&mut egui::Ui, &mut Settings),
+    ) {
         use crate::theme::CherryBlossomTheme;
 
         ui.horizontal(|ui| {
@@ -458,12 +591,12 @@ impl Settings {
                 ui.label(
                     egui::RichText::new(title)
                         .size(13.0)
-                        .color(CherryBlossomTheme::TEXT_PRIMARY)
+                        .color(CherryBlossomTheme::TEXT_PRIMARY),
                 );
                 ui.label(
                     egui::RichText::new(description)
                         .size(11.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED)
+                        .color(CherryBlossomTheme::TEXT_MUTED),
                 );
             });
 
@@ -475,9 +608,23 @@ impl Settings {
         ui.add_space(12.0);
     }
 
-    fn cozy_row_filtered(&mut self, ui: &mut egui::Ui, has_search: bool, query: &str, title: &str, description: &str, control: impl FnOnce(&mut egui::Ui, &mut Settings)) {
+    fn cozy_row_filtered(
+        &mut self,
+        ui: &mut egui::Ui,
+        has_search: bool,
+        query: &str,
+        title: &str,
+        description: &str,
+        control: impl FnOnce(&mut egui::Ui, &mut Settings),
+    ) {
         if has_search {
-            let search_text = format!("{} {} {}", title, description, self.get_setting_keywords(title)).to_lowercase();
+            let search_text = format!(
+                "{} {} {}",
+                title,
+                description,
+                self.get_setting_keywords(title)
+            )
+            .to_lowercase();
             if !search_text.contains(query) {
                 return;
             }

@@ -27,24 +27,24 @@ impl CommandPalette {
             .title_bar(false)
             .show(ctx, |ui| {
                 ui.set_height(ui.available_height());
-                
+
                 ui.horizontal(|ui| {
                     ui.label(
                         egui::RichText::new(">")
                             .size(20.0)
-                            .color(crate::theme::CherryBlossomTheme::ACCENT_PINK)
+                            .color(crate::theme::CherryBlossomTheme::ACCENT_PINK),
                     );
-                    
+
                     let response = ui.text_edit_singleline(&mut self.query);
                     response.request_focus();
-                    
+
                     if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                         self.open = false;
                     }
                 });
-                
+
                 ui.separator();
-                
+
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     let commands = vec![
                         ("New File", "Create a new file"),
@@ -58,7 +58,7 @@ impl CommandPalette {
                         ("Settings", "Open settings panel"),
                         ("Command Palette", "Open command palette"),
                     ];
-                    
+
                     for (name, desc) in commands {
                         if self.query.is_empty()
                             || name.to_lowercase().contains(&self.query.to_lowercase())
@@ -66,29 +66,32 @@ impl CommandPalette {
                         {
                             ui.horizontal(|ui| {
                                 ui.set_width(ui.available_width());
-                                
+
                                 ui.label(
                                     egui::RichText::new(name)
                                         .size(14.0)
-                                        .color(crate::theme::CherryBlossomTheme::TEXT_PRIMARY)
+                                        .color(crate::theme::CherryBlossomTheme::TEXT_PRIMARY),
                                 );
-                                
-                                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                    ui.label(
-                                        egui::RichText::new(desc)
-                                            .size(12.0)
-                                            .color(crate::theme::CherryBlossomTheme::TEXT_MUTED)
-                                    );
-                                });
+
+                                ui.with_layout(
+                                    egui::Layout::right_to_left(egui::Align::Center),
+                                    |ui| {
+                                        ui.label(
+                                            egui::RichText::new(desc).size(12.0).color(
+                                                crate::theme::CherryBlossomTheme::TEXT_MUTED,
+                                            ),
+                                        );
+                                    },
+                                );
                             });
-                            
+
                             ui.separator();
                         }
                     }
                 });
             });
     }
-    
+
     pub fn toggle(&mut self) {
         self.open = !self.open;
         if self.open {

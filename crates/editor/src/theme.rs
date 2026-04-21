@@ -3,7 +3,7 @@
 // I need to actually redo the whole editor directory to sort the editor logic
 // from the themes and settings logic, and probably other stuff as well
 
-use egui::{Color32, Visuals, TextStyle, FontId};
+use egui::{Color32, FontId, TextStyle, Visuals};
 
 pub struct CherryBlossomTheme;
 
@@ -24,18 +24,18 @@ impl CherryBlossomTheme {
     pub const BG_MID: Color32 = Color32::from_rgb(55, 35, 45);
     pub const BG_LIGHT: Color32 = Color32::from_rgb(70, 45, 58);
     pub const BG_LIGHTER: Color32 = Color32::from_rgb(85, 55, 70);
-    
+
     pub const TEXT_PRIMARY: Color32 = Color32::from_rgb(255, 235, 245);
     pub const TEXT_SECONDARY: Color32 = Color32::from_rgb(200, 160, 180);
     pub const TEXT_MUTED: Color32 = Color32::from_rgb(150, 110, 130);
-    
+
     pub const ACCENT_PINK: Color32 = Color32::from_rgb(255, 130, 180);
     pub const ACCENT_HOT: Color32 = Color32::from_rgb(255, 90, 150);
     pub const ACCENT_LIGHT: Color32 = Color32::from_rgb(255, 200, 220);
 
     pub fn apply(ctx: &egui::Context) {
         let mut visuals = Visuals::dark();
-        
+
         visuals.window_fill = Self::BG_DARK;
         visuals.panel_fill = Self::BG_DARK;
         visuals.window_stroke = egui::Stroke::new(1.0, Self::BG_LIGHT);
@@ -44,20 +44,20 @@ impl CherryBlossomTheme {
         visuals.widgets.hovered.bg_fill = Self::BG_LIGHTER;
         visuals.widgets.active.bg_fill = Self::PINK_700;
         visuals.widgets.open.bg_fill = Self::PINK_600;
-        
+
         visuals.selection.bg_fill = Self::PINK_600;
         visuals.selection.stroke = egui::Stroke::new(1.0, Self::ACCENT_LIGHT);
-        
+
         visuals.override_text_color = Some(Self::TEXT_PRIMARY);
-        
+
         visuals.hyperlink_color = Self::ACCENT_PINK;
-        
+
         visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, Self::TEXT_PRIMARY);
         visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.0, Self::ACCENT_LIGHT);
         visuals.widgets.active.fg_stroke = egui::Stroke::new(1.0, Self::PINK_50);
-        
+
         ctx.set_visuals(visuals);
-        
+
         let mut style = (*ctx.style()).clone();
         style.text_styles.insert(
             TextStyle::Heading,
@@ -79,7 +79,7 @@ impl CherryBlossomTheme {
             TextStyle::Small,
             FontId::new(11.0, egui::FontFamily::Proportional),
         );
-        
+
         ctx.set_style(style);
     }
 }

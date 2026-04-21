@@ -39,7 +39,7 @@ impl TabManager {
     pub fn new_tab(&mut self) {
         let id = self.next_id;
         self.next_id += 1;
-        
+
         let tab = Tab {
             id,
             name: format!("untitled-{}", id),
@@ -48,11 +48,11 @@ impl TabManager {
             is_modified: false,
             tab_type: TabType::File,
         };
-        
+
         self.tabs.push(tab);
         self.active_tab = self.tabs.len() - 1;
     }
-    
+
     pub fn open_settings_tab(&mut self) {
         for (i, tab) in self.tabs.iter().enumerate() {
             if tab.tab_type == TabType::Settings {
@@ -60,10 +60,10 @@ impl TabManager {
                 return;
             }
         }
-        
+
         let id = self.next_id;
         self.next_id += 1;
-        
+
         let tab = Tab {
             id,
             name: "Settings".to_string(),
@@ -72,7 +72,7 @@ impl TabManager {
             is_modified: false,
             tab_type: TabType::Settings,
         };
-        
+
         self.tabs.push(tab);
         self.active_tab = self.tabs.len() - 1;
     }
@@ -84,10 +84,10 @@ impl TabManager {
                 return;
             }
         }
-        
+
         let id = self.next_id;
         self.next_id += 1;
-        
+
         let tab = Tab {
             id,
             name: "Search Results".to_string(),
@@ -96,7 +96,7 @@ impl TabManager {
             is_modified: false,
             tab_type: TabType::SearchResults,
         };
-        
+
         self.tabs.push(tab);
         self.active_tab = self.tabs.len() - 1;
     }
@@ -121,14 +121,15 @@ impl TabManager {
 
         let id = self.next_id;
         self.next_id += 1;
-        
-        let name = path.file_name()
+
+        let name = path
+            .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "untitled".to_string());
-        
+
         let mut editor = Editor::new();
         editor.buffer = core::buffer::Buffer::from_str(&content);
-        
+
         let tab = Tab {
             id,
             name,
@@ -137,7 +138,7 @@ impl TabManager {
             is_modified: false,
             tab_type: TabType::File,
         };
-        
+
         self.tabs.push(tab);
         if switch_to_tab {
             self.active_tab = self.tabs.len() - 1;
