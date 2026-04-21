@@ -14,9 +14,18 @@ use theme::CherryBlossomTheme;
 #[derive(Serialize, Deserialize, Default)]
 struct AppState {
     recent_projects: Vec<std::path::PathBuf>,
+    recent_files: Vec<RecentFile>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct RecentFile {
+    path: std::path::PathBuf,
+    project_dir: Option<std::path::PathBuf>,
 }
 
 const MAX_RECENT_PROJECTS: usize = 10;
+
+const MAX_RECENT_FILES: usize = 10;
 
 struct AsterIDE {
     tabs: TabManager,
@@ -32,6 +41,7 @@ struct AsterIDE {
     editor_had_focus: bool,
     editor_id: Option<egui::Id>,
     recent_projects: Vec<std::path::PathBuf>,
+    recent_files: Vec<RecentFile>,
 }
 
 #[derive(PartialEq)]
@@ -45,6 +55,7 @@ enum SidebarTab {
 impl Default for AsterIDE {
     fn default() -> Self {
         let recent_projects = Self::load_recent_projects();
+        let recent_files = Self::load_recent_files();
         Self {
             tabs: TabManager::new(),
             settings: Settings::load(),
@@ -59,6 +70,7 @@ impl Default for AsterIDE {
             editor_had_focus: false,
             editor_id: None,
             recent_projects,
+            recent_files,
         }
     }
 }
@@ -88,16 +100,73 @@ impl AsterIDE {
         Vec::new()
     }
 
-    fn save_recent_projects(&self) {
+    fn load_recent_files() -> Vec<RecentFile> {
+        if let Some(path) = Self::state_file_path() {
+            if let Ok(content) = std::fs::read_to_string(&path) {
+                if let Ok(state) = serde_json::from_str::<AppState>(&content) {
+                    return state
+                        .recent_files
+                        .into_iter()
+                        .filter(|f| f.path.exists())
+                        .take(MAX_RECENT_FILES)
+                        .collect();
+                }
+            }
+        }
+        Vec::new()
+    }
+
+    fn save_state(&self) {
         if let Some(path) = Self::state_file_path() {
             if let Some(dir) = path.parent() {
                 let _ = std::fs::create_dir_all(dir);
             }
             let state = AppState {
                 recent_projects: self.recent_projects.clone(),
+                recent_files: self.recent_files.clone(),
             };
             if let Ok(json) = serde_json::to_string_pretty(&state) {
                 let _ = std::fs::write(&path, json);
+            }
+        }
+    }
+
+    fn add_recent_file(&mut self, path: std::path::PathBuf) {
+        let project_dir = self.opened_folder.clone();
+        let recent = RecentFile {
+            path,
+            project_dir,
+        };
+        self.recent_files.retain(|f| f.path != recent.path);
+        self.recent_files.insert(0, recent);
+        if self.recent_files.len() > MAX_RECENT_FILES {
+            self.recent_files.truncate(MAX_RECENT_FILES);
+        }
+        self.save_state();
+    }
+
+    fn get_relevant_recent_files(&self) -> Vec<RecentFile> {
+        match &self.opened_folder {
+            Some(project) => {
+                self.recent_files
+                    .iter()
+                    .filter(|f| {
+                        f.project_dir.as_ref() == Some(project)
+                            && !self.tabs.is_file_open(&f.path)
+                    })
+                    .take(3)
+                    .cloned()
+                    .collect()
+            }
+            None => {
+                self.recent_files
+                    .iter()
+                    .filter(|f| {
+                        f.project_dir.is_none() && !self.tabs.is_file_open(&f.path)
+                    })
+                    .take(3)
+                    .cloned()
+                    .collect()
             }
         }
     }
@@ -147,7 +216,8 @@ impl AsterIDE {
         if let Some(path) = rfd::FileDialog::new().pick_file() {
             match std::fs::read_to_string(&path) {
                 Ok(content) => {
-                    self.tabs.open_file(path, content);
+                    self.tabs.open_file(path.clone(), content);
+                    self.add_recent_file(path);
                     self.set_status(
                         format!(
                             "Opened: {}",
@@ -170,7 +240,7 @@ impl AsterIDE {
         self.recent_projects.retain(|p| p != &path);
         self.recent_projects.insert(0, path);
         self.recent_projects.truncate(MAX_RECENT_PROJECTS);
-        self.save_recent_projects();
+        self.save_state();
     }
 
     fn open_folder(&mut self, ctx: &egui::Context) {
@@ -605,15 +675,17 @@ impl AsterIDE {
                     self.expanded_folders.insert(path.clone());
                 }
             } else {
-                if let Ok(content) = std::fs::read_to_string(path) {
+                if let Ok(content) = std::fs::read_to_string(&path) {
                     self.tabs.open_file(path.clone(), content);
+                    self.add_recent_file(path.to_path_buf());
                 }
             }
         }
 
         if response.middle_clicked() && !is_dir {
-            if let Ok(content) = std::fs::read_to_string(path) {
+            if let Ok(content) = std::fs::read_to_string(&path) {
                 self.tabs.open_file_in_background(path.clone(), content);
+                self.add_recent_file(path.to_path_buf());
             }
         }
 
@@ -798,9 +870,38 @@ impl AsterIDE {
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).fill(CherryBlossomTheme::BG_DARKEST))
             .show(ctx, |ui| {
-                ui.vertical_centered(|ui| {
-                    ui.add_space(ui.available_height() * 0.15);
+                let recent_files_data: Vec<(std::path::PathBuf, String)> = self
+                    .get_relevant_recent_files()
+                    .into_iter()
+                    .take(3)
+                    .map(|f| {
+                        let name = f
+                            .path
+                            .file_name()
+                            .map(|n| n.to_string_lossy().to_string())
+                            .unwrap_or_else(|| f.path.display().to_string());
+                        (f.path, name)
+                    })
+                    .collect();
+                let recent_projects_data: Vec<(std::path::PathBuf, String)> = self
+                    .recent_projects
+                    .iter()
+                    .take(3)
+                    .map(|p| {
+                        let name = p
+                            .file_name()
+                            .map(|n| n.to_string_lossy().to_string())
+                            .unwrap_or_else(|| p.display().to_string());
+                        (p.clone(), name)
+                    })
+                    .collect();
+                let has_recent_projects = !recent_projects_data.is_empty();
+                let has_recent_files = !recent_files_data.is_empty();
+                let has_project_folder = self.opened_folder.is_some();
+                let has_any_recents = has_recent_files || has_recent_projects;
 
+                ui.vertical_centered(|ui| {
+                    ui.add_space(ui.available_height() * 0.08);
                     ui.heading(
                         egui::RichText::new("AsterIDE 🌸")
                             .size(48.0)
@@ -812,71 +913,152 @@ impl AsterIDE {
                             .size(16.0)
                             .color(CherryBlossomTheme::TEXT_SECONDARY),
                     );
+                });
 
-                    ui.add_space(40.0);
+                ui.add_space(60.0);
 
-                    let button_size = egui::vec2(200.0, 40.0);
-                    if ui
-                        .add_sized(button_size, egui::Button::new("📄  Open File"))
-                        .clicked()
-                    {
-                        self.open_file(ctx);
-                    }
-                    ui.add_space(10.0);
-                    if ui
-                        .add_sized(button_size, egui::Button::new("📁  Open Folder"))
-                        .clicked()
-                    {
-                        self.open_folder(ctx);
-                    }
-                    ui.add_space(10.0);
-                    if ui
-                        .add_sized(button_size, egui::Button::new("📝  New File"))
-                        .clicked()
-                    {
-                        self.tabs.new_tab();
-                    }
+                ui.horizontal(|ui| {
+                    let total_width = ui.available_width();
+                    let left_width = if has_any_recents {
+                        total_width * 0.4
+                    } else {
+                        total_width
+                    };
+                    let right_width = total_width * 0.55;
 
-                    if !self.recent_projects.is_empty() {
-                        ui.add_space(40.0);
-                        ui.label(
-                            egui::RichText::new("Recent Projects")
-                                .size(18.0)
-                                .color(CherryBlossomTheme::TEXT_PRIMARY),
-                        );
-                        ui.add_space(15.0);
+                    ui.allocate_ui_with_layout(
+                        egui::vec2(left_width, ui.available_height()),
+                        egui::Layout::top_down(egui::Align::Center),
+                        |ui| {
+                            egui::Frame::group(&ui.style())
+                                .fill(CherryBlossomTheme::BG_DARK)
+                                .inner_margin(20.0)
+                                .show(ui, |ui| {
+                                    let button_size = egui::vec2(200.0, 40.0);
+                                    if ui
+                                        .add_sized(button_size, egui::Button::new("📄  Open File"))
+                                        .clicked()
+                                    {
+                                        self.open_file(ctx);
+                                    }
+                                    ui.add_space(10.0);
+                                    if ui
+                                        .add_sized(button_size, egui::Button::new("📁  Open Folder"))
+                                        .clicked()
+                                    {
+                                        self.open_folder(ctx);
+                                    }
+                                    ui.add_space(10.0);
+                                    if ui
+                                        .add_sized(button_size, egui::Button::new("📝  New File"))
+                                        .clicked()
+                                    {
+                                        self.tabs.new_tab();
+                                    }
+                                });
+                        },
+                    );
 
-                        let mut clicked_project: Option<std::path::PathBuf> = None;
-                        for project in self.recent_projects.iter().take(3) {
-                            let project_name = project
-                                .file_name()
-                                .map(|n| n.to_string_lossy().to_string())
-                                .unwrap_or_else(|| project.display().to_string());
-                            let project_path = project.display().to_string();
+                    if has_any_recents {
+                        ui.add_space(20.0);
+                        ui.vertical(|ui| {
+                            let available_height = ui.available_height();
+                            ui.add_space(available_height * 0.1);
+                            ui.add(egui::Separator::default().vertical().spacing(0.0));
+                            ui.add_space(available_height * 0.1);
+                        });
+                        ui.add_space(20.0);
 
-                            ui.horizontal(|ui| {
-                                ui.add_space((ui.available_width() - 300.0) / 2.0);
-                                let response = ui.add(
-                                    egui::Button::new(
-                                        egui::RichText::new(format!("📁  {}", project_name))
-                                            .color(CherryBlossomTheme::TEXT_PRIMARY),
-                                    )
+                        ui.allocate_ui_with_layout(
+                            egui::vec2(right_width, ui.available_height()),
+                            egui::Layout::top_down(egui::Align::LEFT),
+                            |ui| {
+                                egui::Frame::group(&ui.style())
                                     .fill(CherryBlossomTheme::BG_DARK)
-                                    .min_size(egui::vec2(300.0, 35.0)),
-                                );
+                                    .inner_margin(16.0)
+                                    .show(ui, |ui| {
+                                        ui.set_width(right_width - 32.0);
 
-                                if response.clicked() {
-                                    clicked_project = Some(project.clone());
-                                }
+                                        if has_recent_files {
+                                            let title = if has_project_folder {
+                                                "Recent Files in Project"
+                                            } else {
+                                                "Recent Files"
+                                            };
+                                            ui.label(
+                                                egui::RichText::new(title)
+                                                    .size(16.0)
+                                                    .color(CherryBlossomTheme::TEXT_PRIMARY),
+                                            );
+                                            ui.add_space(10.0);
 
-                                response.on_hover_text(&project_path);
-                            });
-                            ui.add_space(8.0);
-                        }
+                                            let mut clicked_file: Option<std::path::PathBuf> = None;
+                                            for (path, name) in &recent_files_data {
+                                                let file_path_str = path.display().to_string();
+                                                let response = ui.add(
+                                                    egui::Button::new(
+                                                        egui::RichText::new(format!("📄  {}", file_path_str))
+                                                            .color(CherryBlossomTheme::TEXT_PRIMARY)
+                                                            .size(12.0),
+                                                    )
+                                                    .fill(CherryBlossomTheme::BG_MID)
+                                                    .min_size(egui::vec2(right_width - 50.0, 30.0)),
+                                                );
 
-                        if let Some(project) = clicked_project {
-                            self.open_recent_project(&project);
-                        }
+                                                if response.clicked() {
+                                                    clicked_file = Some(path.clone());
+                                                }
+                                                response.on_hover_text(name.clone());
+                                            }
+
+                                            if let Some(path) = clicked_file {
+                                                if let Ok(content) = std::fs::read_to_string(&path) {
+                                                    self.tabs.open_file(path.clone(), content);
+                                                    self.add_recent_file(path);
+                                                }
+                                            }
+
+                                            if has_recent_projects {
+                                                ui.add_space(20.0);
+                                                ui.separator();
+                                                ui.add_space(10.0);
+                                            }
+                                        }
+
+                                        if has_recent_projects {
+                                            ui.label(
+                                                egui::RichText::new("Recent Projects")
+                                                    .size(16.0)
+                                                    .color(CherryBlossomTheme::TEXT_PRIMARY),
+                                            );
+                                            ui.add_space(10.0);
+
+                                            let mut clicked_project: Option<std::path::PathBuf> = None;
+                                            for (path, name) in &recent_projects_data {
+                                                let project_path_str = path.display().to_string();
+                                                let response = ui.add(
+                                                    egui::Button::new(
+                                                        egui::RichText::new(format!("📁  {}", project_path_str))
+                                                            .color(CherryBlossomTheme::TEXT_PRIMARY)
+                                                            .size(12.0),
+                                                    )
+                                                    .fill(CherryBlossomTheme::BG_MID)
+                                                    .min_size(egui::vec2(right_width - 50.0, 30.0)),
+                                                );
+
+                                                if response.clicked() {
+                                                    clicked_project = Some(path.clone());
+                                                }
+                                                response.on_hover_text(name.clone());
+                                            }
+
+                                            if let Some(project) = clicked_project {
+                                                self.open_recent_project(&project);
+                                            }
+                                        }
+                                    });
+                            },
+                        );
                     }
                 });
             });
@@ -910,7 +1092,8 @@ impl AsterIDE {
                 if let Some(path) = settings::get_settings_file_path() {
                     self.settings.save();
                     if let Ok(content) = std::fs::read_to_string(&path) {
-                        self.tabs.open_file(path, content);
+                        self.tabs.open_file(path.clone(), content);
+                        self.add_recent_file(path);
                     }
                 }
             }

@@ -36,6 +36,12 @@ impl TabManager {
         self.tabs.is_empty()
     }
 
+    pub fn is_file_open(&self, path: &PathBuf) -> bool {
+        self.tabs.iter().any(|tab| {
+            tab.tab_type == TabType::File && tab.path.as_ref() == Some(path)
+        })
+    }
+
     pub fn new_tab(&mut self) {
         let id = self.next_id;
         self.next_id += 1;
