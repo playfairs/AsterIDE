@@ -258,6 +258,7 @@ dependencies = [
  "dirs",
  "eframe",
  "egui",
+ "egui_code_editor",
  "grep",
  "grep-regex",
  "grep-searcher",
@@ -1017,6 +1018,15 @@ dependencies = [
  "web-time",
  "webbrowser",
  "winit",
+]
+
+[[package]]
+name = "egui_code_editor"
+version = "0.2.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3633490f8dd567bba6daad40d8e33c69fab4c00bdc075cd19bd0028543c888c2"
+dependencies = [
+ "egui",
 ]
 
 [[package]]

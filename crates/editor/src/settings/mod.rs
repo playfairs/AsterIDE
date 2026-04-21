@@ -29,6 +29,12 @@ pub struct Settings {
     pub search_ignore_dirs_enabled: bool,
     pub search_ignored_dirs: String,
     pub search_min_chars: usize,
+    pub highlight_current_line: bool,
+    pub auto_indent: bool,
+    pub scroll_beyond_last_line: bool,
+    pub minimap: bool,
+    pub recent_files_limit: usize,
+    pub recent_projects_limit: usize,
     #[serde(skip)]
     pub selected_category: SettingsCategory,
     #[serde(skip)]
@@ -54,6 +60,12 @@ impl Default for Settings {
             search_ignore_dirs_enabled: true,
             search_ignored_dirs: ".git, node_modules, venv, .venv, target, dist, build, .next, .cache, __pycache__, .idea, .vscode".to_string(),
             search_min_chars: 2,
+            highlight_current_line: true,
+            auto_indent: true,
+            scroll_beyond_last_line: true,
+            minimap: false,
+            recent_files_limit: 5,
+            recent_projects_limit: 5,
             selected_category: SettingsCategory::default(),
             search_query: String::new(),
             edit_as_json_clicked: false,
@@ -274,7 +286,7 @@ impl Settings {
     }
 
     fn count_settings(&self) -> usize {
-        12
+        16
     }
 
     fn count_matching_settings(&self, query: &str) -> usize {
@@ -296,6 +308,10 @@ impl Settings {
             "ignore directories",
             "ignored directories",
             "auto-search threshold",
+            "highlight current line",
+            "auto indent",
+            "scroll beyond last line",
+            "minimap",
         ];
 
         for name in setting_names {
@@ -323,7 +339,7 @@ impl Settings {
                     has_search,
                     &query,
                     "Show line numbers",
-                    "Display line numbers in the editor",
+                    "Display line numbers in the editor. Note: Lines may be off by a few pixels but remain accurate",
                     |ui, settings| {
                         ui.checkbox(&mut settings.show_line_numbers, "");
                     },
@@ -346,6 +362,16 @@ impl Settings {
                     "Render whitespace characters",
                     |ui, settings| {
                         ui.checkbox(&mut settings.show_whitespace, "");
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Highlight current line",
+                    "Highlight the line where the cursor is",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.highlight_current_line, "");
                     },
                 );
             });
@@ -396,7 +422,7 @@ impl Settings {
             ui.add_space(12.0);
         }
 
-        if !has_search || self.matches_search(&query, &["behavior", "vim", "auto save", "interval"])
+        if !has_search || self.matches_search(&query, &["behavior", "vim", "auto save", "interval", "auto indent", "scroll"])
         {
             self.setting_card(ui, "Behavior", |ui, settings| {
                 settings.cozy_row_filtered(
@@ -438,6 +464,26 @@ impl Settings {
                         },
                     );
                 }
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Auto indent",
+                    "Automatically indent new lines",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.auto_indent, "");
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Scroll beyond last line",
+                    "Allow scrolling past the end of file",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.scroll_beyond_last_line, "");
+                    },
+                );
             });
         }
     }
@@ -466,6 +512,49 @@ impl Settings {
                     "Show the bottom status bar",
                     |ui, settings| {
                         ui.checkbox(&mut settings.status_bar_visible, "");
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Minimap",
+                    "Show code minimap on the right",
+                    |ui, settings| {
+                        ui.checkbox(&mut settings.minimap, "");
+                    },
+                );
+            });
+        }
+
+        if !has_search || self.matches_search(&query, &["recent", "files", "projects", "history"]) {
+            self.setting_card(ui, "Recent Items", |ui, settings| {
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Recent files limit",
+                    "Number of recent files to show",
+                    |ui, settings| {
+                        ui.add(
+                            egui::Slider::new(&mut settings.recent_files_limit, 1..=20)
+                                .show_value(true)
+                                .text("files"),
+                        );
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Recent projects limit",
+                    "Number of recent projects to show",
+                    |ui, settings| {
+                        ui.add(
+                            egui::Slider::new(&mut settings.recent_projects_limit, 1..=20)
+                                .show_value(true)
+                                .text("projects"),
+                        );
                     },
                 );
             });
@@ -647,6 +736,10 @@ impl Settings {
             "Status bar" => "bottom panel info",
             "Ignore directories" => "exclude skip folders",
             "Auto-search threshold" => "minimum characters",
+            "Highlight current line" => "cursor row",
+            "Auto indent" => "automatic indentation",
+            "Scroll beyond last line" => "overscroll end of file",
+            "Minimap" => "code overview zoomout",
             _ => "",
         }
     }

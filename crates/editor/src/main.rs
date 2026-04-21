@@ -154,7 +154,7 @@ impl AsterIDE {
                         f.project_dir.as_ref() == Some(project)
                             && !self.tabs.is_file_open(&f.path)
                     })
-                    .take(3)
+                    .take(self.settings.recent_files_limit)
                     .cloned()
                     .collect()
             }
@@ -164,16 +164,19 @@ impl AsterIDE {
                     .filter(|f| {
                         f.project_dir.is_none() && !self.tabs.is_file_open(&f.path)
                     })
-                    .take(3)
+                    .take(self.settings.recent_files_limit)
                     .cloned()
                     .collect()
             }
         }
     }
 
-    fn set_status(&mut self, msg: String, ctx: &egui::Context) {
+    fn set_status(&mut self, msg: String, _ctx: &egui::Context) {
         self.status_message = msg;
-        self.status_message_time = ctx.input(|i| i.time);
+        self.status_message_time = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs_f64();
     }
 
     fn should_ignore_dir(&self, path: &std::path::Path) -> bool {
@@ -593,7 +596,13 @@ impl AsterIDE {
 
     fn show_explorer(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            ui.heading("Explorer");
+            let heading_text = self
+                .opened_folder
+                .as_ref()
+                .and_then(|p| p.file_name())
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_else(|| "Explorer".to_string());
+            ui.heading(heading_text);
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 let button_size = egui::vec2(20.0, 20.0);
 
@@ -873,7 +882,7 @@ impl AsterIDE {
                 let recent_files_data: Vec<(std::path::PathBuf, String)> = self
                     .get_relevant_recent_files()
                     .into_iter()
-                    .take(3)
+                    .take(self.settings.recent_files_limit)
                     .map(|f| {
                         let name = f
                             .path
@@ -886,7 +895,7 @@ impl AsterIDE {
                 let recent_projects_data: Vec<(std::path::PathBuf, String)> = self
                     .recent_projects
                     .iter()
-                    .take(3)
+                    .take(self.settings.recent_projects_limit)
                     .map(|p| {
                         let name = p
                             .file_name()
@@ -1131,9 +1140,9 @@ impl AsterIDE {
             (String::new(), 1)
         };
 
-        let show_line_numbers = self.settings.show_line_numbers;
+        let _show_line_numbers = self.settings.show_line_numbers;
         let font_size = self.settings.font_size;
-        let line_number_width = if show_line_numbers { 50.0 } else { 0.0 };
+        let _line_number_width = if _show_line_numbers { 50.0 } else { 0.0 };
 
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).fill(CherryBlossomTheme::BG_DARKEST))
@@ -1141,75 +1150,18 @@ impl AsterIDE {
                 let mut text_changed = false;
                 let mut new_text = content.clone();
 
-                let available_height = ui.available_height();
-                let available_width = ui.available_width();
 
-                // This shit is fucking aids, I genuinely don't get how VSC manages this shit
-                // at this point who needs numbers right?? 😂✌️
-                let font_id = egui::FontId::monospace(font_size);
-                let line_height = {
-                    let galley = ui.painter().layout(
-                        "M".to_string(),
-                        font_id.clone(),
-                        CherryBlossomTheme::TEXT_PRIMARY,
-                        f32::INFINITY,
-                    );
-                    galley.size().y + ui.spacing().item_spacing.y
-                };
-                let content_height = (line_count as f32 * line_height).max(available_height);
-                let editor_width = available_width - line_number_width;
+                let mut editor = egui_code_editor::CodeEditor::default()
+                    .id_source("code_editor")
+                    .with_fontsize(font_size)
+                    .with_theme(egui_code_editor::ColorTheme::SONOKAI)
+                    .vscroll(true);
 
-                egui::ScrollArea::vertical()
-                    .id_salt("editor_scroll")
-                    .auto_shrink([false; 2])
-                    .show(ui, |ui| {
-                        // Create a Grid, which should IN THEORY work (it doesn't)
-                        ui.set_height(content_height);
-                        ui.set_width(available_width);
+                let response = editor.show(ui, &mut new_text);
 
-                        ui.horizontal(|ui| {
-                            ui.set_height(content_height);
-
-                            if show_line_numbers {
-                                let number_rect = ui.allocate_exact_size(
-                                    egui::vec2(line_number_width, content_height),
-                                    egui::Sense::hover(),
-                                ).0;
-                                
-                                for i in 0..line_count.max(1) {
-                                    let y_pos = number_rect.top() + (i as f32 * line_height) + (line_height * 0.5);
-                                    let line_number = i + 1;
-                                    ui.painter().text(
-                                        egui::pos2(number_rect.right() - 8.0, y_pos),
-                                        egui::Align2::RIGHT_CENTER,
-                                        format!("{}", line_number),
-                                        font_id.clone(),
-                                        CherryBlossomTheme::TEXT_MUTED,
-                                    );
-                                }
-                            }
-
-                            ui.vertical(|ui| {
-                                ui.set_width(editor_width);
-                                ui.set_height(content_height);
-
-                                let editor_id = ui.id().with("editor_text");
-                                let text_edit = egui::TextEdit::multiline(&mut new_text)
-                                    .id(editor_id)
-                                    .font(font_id.clone())
-                                    .text_color(CherryBlossomTheme::TEXT_PRIMARY)
-                                    .desired_width(editor_width);
-
-                                let response = ui
-                                    .add_sized(egui::vec2(editor_width, content_height), text_edit);
-
-                                if response.has_focus() {
-                                    self.editor_had_focus = true;
-                                    self.editor_id = Some(editor_id);
-                                }
-                            });
-                        });
-                    });
+                if response.response.has_focus() {
+                    self.editor_had_focus = true;
+                }
 
                 if new_text != content {
                     text_changed = true;
