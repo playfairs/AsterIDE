@@ -251,6 +251,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "asteride"
+version = "0.1.0"
+dependencies = [
+ "core",
+ "dirs",
+ "eframe",
+ "egui",
+ "grep",
+ "grep-regex",
+ "grep-searcher",
+ "regex",
+ "rfd",
+ "serde",
+ "serde_json",
+ "walkdir",
+]
+
+[[package]]
 name = "async-broadcast"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -902,24 +920,6 @@ checksum = "137c0ce4ce4152ff7e223a7ce22ee1057cdff61fce0a45c32459c3ccec64868d"
 dependencies = [
  "bytemuck",
  "emath",
-]
-
-[[package]]
-name = "editor"
-version = "0.1.0"
-dependencies = [
- "core",
- "dirs",
- "eframe",
- "egui",
- "grep",
- "grep-regex",
- "grep-searcher",
- "regex",
- "rfd",
- "serde",
- "serde_json",
- "walkdir",
 ]
 
 [[package]]
