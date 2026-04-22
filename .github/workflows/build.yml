@@ -42,6 +42,7 @@ jobs:
         cp -r "target/release/bundle/osx/AsterIDE.app" "$BUILD_DIR/"
 
         xattr -rc "$BUILD_DIR/AsterIDE.app"
+        codesign --force --deep --sign - "$BUILD_DIR/AsterIDE.app"
 
         ln -s /Applications "$BUILD_DIR/Applications"
 
