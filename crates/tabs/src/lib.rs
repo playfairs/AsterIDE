@@ -219,6 +219,18 @@ impl TabManager {
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Tab> {
         self.tabs.iter_mut()
     }
+
+    pub fn update_tab_path(&mut self, old_path: &PathBuf, new_path: PathBuf) {
+        for tab in &mut self.tabs {
+            if tab.tab_type == TabType::File && tab.path.as_ref() == Some(old_path) {
+                tab.path = Some(new_path.clone());
+                tab.name = new_path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_else(|| "untitled".to_string());
+            }
+        }
+    }
 }
 
 impl Default for TabManager {

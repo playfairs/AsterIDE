@@ -36,6 +36,7 @@ struct AsterIDE {
     editor_id: Option<egui::Id>,
     recent_projects: Vec<std::path::PathBuf>,
     recent_files: Vec<RecentFile>,
+    renaming_path: Option<(std::path::PathBuf, String)>,
 }
 
 #[derive(PartialEq)]
@@ -65,6 +66,7 @@ impl Default for AsterIDE {
             editor_id: None,
             recent_projects,
             recent_files,
+            renaming_path: None,
         }
     }
 }
@@ -328,46 +330,56 @@ impl AsterIDE {
         }
     }
 
-    fn open_in_finder(&self, path: &std::path::PathBuf) {
-        #[cfg(target_os = "macos")]
-        {
-            let _ = std::process::Command::new("open")
-                .arg(path)
-                .spawn();
-        }
-        #[cfg(target_os = "windows")]
-        {
-            let _ = std::process::Command::new("explorer")
-                .arg("/select,")
-                .arg(path)
-                .spawn();
-        }
-        #[cfg(target_os = "linux")]
-        {
-            let _ = std::process::Command::new("xdg-open")
-                .arg(path)
-                .spawn();
-        }
-    }
+    // TODO: Needs to be fixed
+    // fn open_in_finder(&self, path: &std::path::PathBuf) {
+    //     #[cfg(target_os = "macos")]
+    //     {
+    //         let _ = std::process::Command::new("open")
+    //             .arg(path)
+    //             .spawn();
+    //     }
+    //     #[cfg(target_os = "windows")]
+    //     {
+    //         let _ = std::process::Command::new("explorer")
+    //             .arg("/select,")
+    //             .arg(path)
+    //             .spawn();
+    //     }
+    //     #[cfg(target_os = "linux")]
+    //     {
+    //         let _ = std::process::Command::new("xdg-open")
+    //             .arg(path)
+    //             .spawn();
+    //     }
+    // }
 
     fn rename_path(&mut self, path: std::path::PathBuf) {
-        let parent = path.parent().map(|p| p.to_path_buf());
         let old_name = path
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_default();
+        self.renaming_path = Some((path, old_name));
+    }
 
-        if let Some(new_path) = rfd::FileDialog::new()
-            .set_title("Rename")
-            .set_directory(parent.as_ref().unwrap_or(&std::path::PathBuf::from(".")))
-            .set_file_name(&old_name)
-            .save_file()
-        {
-            if let Err(e) = std::fs::rename(&path, &new_path) {
-                eprintln!("Failed to rename: {}", e);
-            } else {
-                if let Some(parent) = parent {
-                    self.expanded_folders.insert(parent);
+    fn finish_rename(&mut self, new_name: &str) {
+        if let Some((old_path, _)) = self.renaming_path.take() {
+            if new_name.is_empty() {
+                return;
+            }
+            let parent = old_path.parent().map(|p| p.to_path_buf());
+            let new_path = parent.as_ref().map(|p| p.join(new_name));
+            
+            if let Some(new_path) = new_path {
+                if new_path != old_path {
+                    if let Err(e) = std::fs::rename(&old_path, &new_path) {
+                        eprintln!("Failed to rename: {}", e);
+                    } else {
+                        // Update any open tabs with the old path
+                        self.tabs.update_tab_path(&old_path, new_path.clone());
+                        if let Some(parent) = parent {
+                            self.expanded_folders.insert(parent);
+                        }
+                    }
                 }
             }
         }
@@ -827,117 +839,138 @@ impl AsterIDE {
             ("  ", "")
         };
 
-        let full_text = format!("{}{}{} {}{}", prefix, indent, icon, name, suffix);
+        let is_renaming = self
+            .renaming_path
+            .as_ref()
+            .map(|(p, _)| p == path)
+            .unwrap_or(false);
 
-        let response = ui.selectable_label(is_current, &full_text);
+        if is_renaming {
+            let rename_text = self.renaming_path.as_mut().map(|(_, n)| n).unwrap();
+            let text_edit = ui.add(
+                egui::TextEdit::singleline(rename_text)
+                    .desired_width(ui.available_width())
+                    .font(egui::FontId::new(13.0, egui::FontFamily::Proportional)),
+            );
 
-        if response.clicked() {
-            if is_dir {
-                if is_expanded {
-                    self.expanded_folders.remove(path);
-                } else {
-                    self.expanded_folders.insert(path.clone());
+            if text_edit.lost_focus() {
+                if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                    let new_name = rename_text.clone();
+                    self.finish_rename(&new_name);
+                } else if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    self.renaming_path = None;
                 }
-            } else {
-                if let Ok(content) = std::fs::read_to_string(&path) {
-                    if !self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
-                        return;
+            }
+
+            if text_edit.ctx.input(|i| i.time) > 0.0 && !text_edit.has_focus() {
+                text_edit.request_focus();
+            }
+        } else {
+            let full_text = format!("{}{}{} {}{}", prefix, indent, icon, name, suffix);
+            let response = ui.selectable_label(is_current, &full_text);
+
+            if response.clicked() {
+                if is_dir {
+                    if is_expanded {
+                        self.expanded_folders.remove(path);
+                    } else {
+                        self.expanded_folders.insert(path.clone());
                     }
-                    self.tabs.open_file(path.clone(), content);
-                    self.add_recent_file(path.to_path_buf());
-                }
-            }
-        }
-
-        if response.middle_clicked() && !is_dir {
-            if let Ok(content) = std::fs::read_to_string(&path) {
-                if !self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
-                    return;
-                }
-                self.tabs.open_file_in_background(path.clone(), content);
-                self.add_recent_file(path.to_path_buf());
-            }
-        }
-
-        response.context_menu(|ui| {
-            ui.style_mut().visuals.widgets.hovered.weak_bg_fill = theme::CherryBlossomTheme::BG_LIGHT;
-            ui.style_mut().visuals.widgets.hovered.bg_fill = theme::CherryBlossomTheme::BG_LIGHT;
-
-            if !is_dir {
-                if ui.button("Open").clicked() {
+                } else {
                     if let Ok(content) = std::fs::read_to_string(&path) {
                         if !self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
-                            ui.close_menu();
                             return;
                         }
                         self.tabs.open_file(path.clone(), content);
                         self.add_recent_file(path.to_path_buf());
                     }
-                    ui.close_menu();
                 }
-                if ui.button("Open in Background").clicked() {
-                    if let Ok(content) = std::fs::read_to_string(&path) {
-                        if !self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
-                            ui.close_menu();
-                            return;
-                        }
-                        self.tabs.open_file_in_background(path.clone(), content);
-                        self.add_recent_file(path.to_path_buf());
+            }
+
+            if response.middle_clicked() && !is_dir {
+                if let Ok(content) = std::fs::read_to_string(&path) {
+                    if !self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
+                        return;
                     }
-                    ui.close_menu();
+                    self.tabs.open_file_in_background(path.clone(), content);
+                    self.add_recent_file(path.to_path_buf());
                 }
-                ui.separator();
             }
 
-            if is_dir {
-                if ui.button("New File...").clicked() {
-                    self.create_new_file_in_folder(path);
+            response.context_menu(|ui| {
+                ui.style_mut().visuals.widgets.hovered.weak_bg_fill = theme::CherryBlossomTheme::BG_LIGHT;
+                ui.style_mut().visuals.widgets.hovered.bg_fill = theme::CherryBlossomTheme::BG_LIGHT;
+
+                if !is_dir {
+                    if ui.button("Open").clicked() {
+                        if let Ok(content) = std::fs::read_to_string(&path) {
+                            if !self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
+                                ui.close_menu();
+                                return;
+                            }
+                            self.tabs.open_file(path.clone(), content);
+                            self.add_recent_file(path.to_path_buf());
+                        }
+                        ui.close_menu();
+                    }
+                    if ui.button("Open in Background").clicked() {
+                        if let Ok(content) = std::fs::read_to_string(&path) {
+                            if !self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
+                                ui.close_menu();
+                                return;
+                            }
+                            self.tabs.open_file_in_background(path.clone(), content);
+                            self.add_recent_file(path.to_path_buf());
+                        }
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                }
+
+                if is_dir {
+                    if ui.button("New File...").clicked() {
+                        self.create_new_file_in_folder(path);
+                        ui.close_menu();
+                    }
+                    if ui.button("New Folder...").clicked() {
+                        self.create_new_folder_in_folder(path);
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                }
+
+                if ui.button("Copy").clicked() {
+                    ui.ctx().copy_text(name.clone());
                     ui.close_menu();
                 }
-                if ui.button("New Folder...").clicked() {
-                    self.create_new_folder_in_folder(path);
+                if ui.button("Copy Path").clicked() {
+                    ui.ctx().copy_text(path.display().to_string());
                     ui.close_menu();
                 }
-                ui.separator();
-            }
-
-            if ui.button("Open in Finder").clicked() {
-                self.open_in_finder(path);
-                ui.close_menu();
-            }
-            ui.separator();
-
-            if ui.button("Copy").clicked() {
-                ui.ctx().copy_text(name.clone());
-                ui.close_menu();
-            }
-            if ui.button("Copy Path").clicked() {
-                ui.ctx().copy_text(path.display().to_string());
-                ui.close_menu();
-            }
-            if ui.button("Copy Relative Path").clicked() {
-                if let Some(folder) = &self.opened_folder {
-                    if let Ok(rel_path) = path.strip_prefix(folder) {
-                        ui.ctx().copy_text(rel_path.display().to_string());
+                if ui.button("Copy Relative Path").clicked() {
+                    if let Some(folder) = &self.opened_folder {
+                        if let Ok(rel_path) = path.strip_prefix(folder) {
+                            ui.ctx().copy_text(rel_path.display().to_string());
+                        } else {
+                            ui.ctx().copy_text(path.display().to_string());
+                        }
                     } else {
                         ui.ctx().copy_text(path.display().to_string());
                     }
-                } else {
-                    ui.ctx().copy_text(path.display().to_string());
+                    ui.close_menu();
                 }
-                ui.close_menu();
-            }
-            ui.separator();
+                ui.separator();
 
-            if ui.button("Rename...").clicked() {
-                self.rename_path(path.clone());
-                ui.close_menu();
-            }
-            if ui.button("Delete...").clicked() {
-                self.delete_path(path.clone());
-                ui.close_menu();
-            }
+                if ui.button("Rename...").clicked() {
+                    self.rename_path(path.clone());
+                    ui.close_menu();
+                }
+                if ui.button("Delete...").clicked() {
+                    self.delete_path(path.clone());
+                    ui.close_menu();
+                }
         });
+        }
 
         if is_expanded && is_dir {
             if let Ok(entries) = std::fs::read_dir(path) {
