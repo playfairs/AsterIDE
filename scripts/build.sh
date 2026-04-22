@@ -4,8 +4,8 @@ set -e
 echo "Building AsterIDE for macOS, please wait."
 
 if ! command -v cargo-bundle &> /dev/null; then
-    echo "cargo-bundle not found. Installing..."
-    cargo install cargo-bundle
+    echo "cargo-bundle not found."
+    exit 1
 fi
 
 echo "Building app bundle."
