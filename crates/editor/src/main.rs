@@ -37,6 +37,7 @@ struct AsterIDE {
     recent_projects: Vec<std::path::PathBuf>,
     recent_files: Vec<RecentFile>,
     renaming_path: Option<(std::path::PathBuf, String)>,
+    initial_path: Option<std::path::PathBuf>,
 }
 
 #[derive(PartialEq)]
@@ -49,6 +50,12 @@ enum SidebarTab {
 
 impl Default for AsterIDE {
     fn default() -> Self {
+        Self::new_with_path(None)
+    }
+}
+
+impl AsterIDE {
+    fn new_with_path(initial_path: Option<std::path::PathBuf>) -> Self {
         let recent_projects = Self::load_recent_projects();
         let recent_files = Self::load_recent_files();
         Self {
@@ -67,6 +74,7 @@ impl Default for AsterIDE {
             recent_projects,
             recent_files,
             renaming_path: None,
+            initial_path,
         }
     }
 }
@@ -1583,6 +1591,21 @@ impl eframe::App for AsterIDE {
         let ctx = ui.ctx();
         CherryBlossomTheme::apply(ctx, self.settings.corner_roundness);
 
+        if let Some(path) = self.initial_path.take() {
+            if path.is_file() {
+                if let Ok(content) = std::fs::read_to_string(&path) {
+                    if self.settings.request_file_open_with_confirmation(path.clone(), content.clone()) {
+                        self.tabs.open_file(path.clone(), content);
+                        self.add_recent_file(path);
+                    }
+                }
+            } else if path.is_dir() {
+                self.opened_folder = Some(path.clone());
+                self.expanded_folders.insert(path.clone());
+                self.add_recent_project(path);
+            }
+        }
+
         if self.editor_had_focus {
             let tab_pressed = ctx.input(|i| {
                 i.key_pressed(egui::Key::Tab)
@@ -1763,6 +1786,22 @@ impl eframe::App for AsterIDE {
 fn main() -> eframe::Result<()> {
     let icon = load_icon();
 
+    let args: Vec<String> = std::env::args().collect();
+    let initial_path = if args.len() > 1 {
+        let path = std::path::PathBuf::from(&args[1]);
+        if path.exists() {
+            match path.canonicalize() {
+                Ok(absolute_path) => Some(absolute_path),
+                Err(_) => Some(path),
+            }
+        } else {
+            eprintln!("Error: Path does not exist: {}", args[1]);
+            std::process::exit(1);
+        }
+    } else {
+        None
+    };
+
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1200.0, 800.0])
@@ -1774,7 +1813,7 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "AsterIDE",
         options,
-        Box::new(|_cc| Ok(Box::new(AsterIDE::default()))),
+        Box::new(move |_cc| Ok(Box::new(AsterIDE::new_with_path(initial_path.clone())))),
     )
 }
 

@@ -21,7 +21,9 @@
     packages = forAllSystems (system: let
       pkgs = import nixpkgs { inherit system; };
     in rec {
-      asteride = pkgs.callPackage ./nix/buildPackage.nix {};
+      asteride = pkgs.callPackage ./nix/buildPackage.nix {
+        inherit (pkgs) lib stdenv rustPlatform darwin installShellFiles;
+      };
       default = asteride;
     });
   };

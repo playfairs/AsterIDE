@@ -3,6 +3,19 @@ name = "asteride"
 version = "0.1.0"
 edition = "2024"
 
+[package.metadata.bundle]
+name = "AsterIDE"
+identifier = "dev.playfairs.asteride"
+icon = ["../../assets/appIcon/icns/asteride-macOS-TintedLight-1024x1024@1x.icns"]
+version = "0.1.0"
+resources = []
+copyright = "Copyright (c) 2026"
+category = "Developer"
+short_description = "A Simple Text Editor written in Rust."
+long_description = """
+A Simple Text Editor written in Rust, made using eGUI, and eframe.
+"""
+
 [dependencies]
 command_palette = { path = "../command_palette" }
 core = { path = "../core" }
