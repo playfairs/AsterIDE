@@ -34,19 +34,17 @@ jobs:
     - name: Create DMG
       run: |
         mkdir -p build
-        
+
         BUILD_DIR="build/AsterIDE"
         rm -rf "$BUILD_DIR"
         mkdir -p "$BUILD_DIR"
-        
+
         cp -r "target/release/bundle/osx/AsterIDE.app" "$BUILD_DIR/"
-        
-        # should fix the '“AsterIDE” is damaged and cant be opened. You should eject the disk image.'
-        # issue that occurs on macOS due to Gatekeeper.
+
         xattr -rc "$BUILD_DIR/AsterIDE.app"
-        
+
         ln -s /Applications "$BUILD_DIR/Applications"
-        
+
         hdiutil create -volname "AsterIDE" -srcfolder "$BUILD_DIR" -ov -format UDZO "build/AsterIDE.dmg"
 
     - name: Upload artifact
@@ -55,7 +53,7 @@ jobs:
         name: AsterIDE-macos
         path: build/AsterIDE.dmg
 
-    - name: Create Release
+    - name: Upload DMG to release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
