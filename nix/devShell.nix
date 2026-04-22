@@ -26,7 +26,7 @@
   rust-analyzer,
   glib,
   vscode,
-  create-dmg
+  cargo-bundle
 }:
 mkShell rec {
   meta.license = lib.licenses.unlicense;
@@ -59,11 +59,9 @@ mkShell rec {
   ] ++ lib.optionals stdenv.isLinux [
     glib
     vscode
-  ] ++ lib.optionals stdenv.isDarwin [
-    create-dmg
   ];
 
-  nativeBuildInputs = lib.optionals stdenv.isLinux [
+  nativeBuildInputs = [ cargo-bundle ] ++ lib.optionals stdenv.isLinux [
     pkg-config
     libxcb
     xcbutil
