@@ -35,16 +35,26 @@ impl CherryBlossomTheme {
     pub const ACCENT_HOT: Color32 = Color32::from_rgb(255, 90, 150);
     pub const ACCENT_LIGHT: Color32 = Color32::from_rgb(255, 200, 220);
 
-    pub fn apply(ctx: &egui::Context) {
+    pub fn apply(ctx: &egui::Context, corner_roundness: f32) {
         let mut visuals = Visuals::dark();
+
+        let radius = egui::CornerRadius::same(corner_roundness.clamp(0.0, 255.0) as u8);
 
         visuals.window_fill = Self::BG_DARK;
         visuals.panel_fill = Self::BG_DARK;
         visuals.window_stroke = egui::Stroke::new(1.0, Self::BG_LIGHT);
+        visuals.window_corner_radius = radius;
+        visuals.menu_corner_radius = radius;
+
+        visuals.widgets.noninteractive.corner_radius = radius;
         visuals.widgets.noninteractive.bg_fill = Self::BG_MID;
+        visuals.widgets.inactive.corner_radius = radius;
         visuals.widgets.inactive.bg_fill = Self::BG_LIGHT;
+        visuals.widgets.hovered.corner_radius = radius;
         visuals.widgets.hovered.bg_fill = Self::BG_LIGHTER;
+        visuals.widgets.active.corner_radius = radius;
         visuals.widgets.active.bg_fill = Self::PINK_700;
+        visuals.widgets.open.corner_radius = radius;
         visuals.widgets.open.bg_fill = Self::PINK_600;
 
         visuals.selection.bg_fill = Self::PINK_600;

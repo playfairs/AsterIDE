@@ -42,6 +42,24 @@ impl TabManager {
         })
     }
 
+    pub fn active_tab_path(&self) -> Option<&PathBuf> {
+        self.tabs.get(self.active_tab).and_then(|tab| {
+            if tab.tab_type == TabType::File {
+                tab.path.as_ref()
+            } else {
+                None
+            }
+        })
+    }
+
+    pub fn is_file_modified(&self, path: &PathBuf) -> bool {
+        self.tabs.iter().any(|tab| {
+            tab.tab_type == TabType::File
+                && tab.path.as_ref() == Some(path)
+                && tab.is_modified
+        })
+    }
+
     pub fn new_tab(&mut self) {
         let id = self.next_id;
         self.next_id += 1;
@@ -200,6 +218,18 @@ impl TabManager {
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Tab> {
         self.tabs.iter_mut()
+    }
+
+    pub fn update_tab_path(&mut self, old_path: &PathBuf, new_path: PathBuf) {
+        for tab in &mut self.tabs {
+            if tab.tab_type == TabType::File && tab.path.as_ref() == Some(old_path) {
+                tab.path = Some(new_path.clone());
+                tab.name = new_path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_else(|| "untitled".to_string());
+            }
+        }
     }
 }
 

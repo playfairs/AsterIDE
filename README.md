@@ -15,14 +15,16 @@ I made AsterIDE as a fun side Project with one thing in mind, to make a silly Te
 ---
 ## Screenshots
 
-![file_1.png](./assets/screenshots/file_1.png)
-![home_1.png](./assets/screenshots/home_1.png)
-![home_2.png](./assets/screenshots/home_2.png)
-![search_1.png](./assets/screenshots/search_1.png)
-![search_2.png](./assets/screenshots/search_2.png)
-![settings_1.png](./assets/screenshots/settings_1.png)
-![settings_2.png](./assets/screenshots/settings_2.png)
-![settings_3.png](./assets/screenshots/settings_3.png)
+![home-1.png](./assets/screenshots/home-1.png)
+![home-2.png](./assets/screenshots/home-2.png)
+![home-3.png](./assets/screenshots/home-3.png)
+![editor-1.png](./assets/screenshots/editor-1.png)
+![search-1.png](./assets/screenshots/search-1.png)
+![settings-1.png](./assets/screenshots/settings-1.png)
+![settings-2.png](./assets/screenshots/settings-2.png)
+![settings-3.png](./assets/screenshots/settings-3.png)
+![settings-4.png](./assets/screenshots/settings-4.png)
+![settings-5.png](./assets/screenshots/settings-5.png)
 
 ---
 Written in **Rust** with ❤️ by **Playfairs**.

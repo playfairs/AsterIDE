@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, Copy, Serialize, Deserialize)]
 pub enum SettingsCategory {
     Editor,
+    Appearance,
     Workbench,
     Search,
 }
@@ -35,12 +36,25 @@ pub struct Settings {
     pub minimap: bool,
     pub recent_files_limit: usize,
     pub recent_projects_limit: usize,
+    pub corner_roundness: f32,
     #[serde(skip)]
     pub selected_category: SettingsCategory,
     #[serde(skip)]
     pub search_query: String,
     #[serde(skip)]
     pub edit_as_json_clicked: bool,
+    #[serde(skip)]
+    pub apply_changes_clicked: bool,
+    #[serde(skip)]
+    pub confirm_discard_open: bool,
+    #[serde(skip)]
+    pub close_after_discard: bool,
+    #[serde(skip)]
+    pub pending_file_open: Option<(std::path::PathBuf, String)>,
+    #[serde(skip)]
+    pub pending_new_tab: bool,
+    #[serde(skip)]
+    saved_state: Option<Box<Settings>>,
 }
 
 impl Default for Settings {
@@ -66,9 +80,16 @@ impl Default for Settings {
             minimap: false,
             recent_files_limit: 5,
             recent_projects_limit: 5,
+            corner_roundness: 6.0,
             selected_category: SettingsCategory::default(),
             search_query: String::new(),
             edit_as_json_clicked: false,
+            apply_changes_clicked: false,
+            confirm_discard_open: false,
+            close_after_discard: false,
+            pending_file_open: None,
+            pending_new_tab: false,
+            saved_state: None,
         }
     }
 }
@@ -77,6 +98,7 @@ impl SettingsCategory {
     fn name(&self) -> &'static str {
         match self {
             SettingsCategory::Editor => "Editor",
+            SettingsCategory::Appearance => "Appearance",
             SettingsCategory::Workbench => "Workbench",
             SettingsCategory::Search => "Search",
         }
@@ -85,6 +107,7 @@ impl SettingsCategory {
     fn icon(&self) -> &'static str {
         match self {
             SettingsCategory::Editor => "📝",
+            SettingsCategory::Appearance => "🎨",
             SettingsCategory::Workbench => "🖥️",
             SettingsCategory::Search => "🔍",
         }
@@ -105,17 +128,89 @@ pub fn get_settings_file_path() -> Option<std::path::PathBuf> {
 
 impl Settings {
     pub fn load() -> Self {
-        if let Some(path) = settings_file_path() {
+        let mut settings = if let Some(path) = settings_file_path() {
             if let Ok(content) = std::fs::read_to_string(&path) {
                 if let Ok(settings) = serde_json::from_str::<Settings>(&content) {
-                    return settings;
+                    settings
+                } else {
+                    Self::default()
                 }
+            } else {
+                Self::default()
             }
-        }
-        Self::default()
+        } else {
+            Self::default()
+        };
+        settings.capture_saved_state();
+        settings
     }
 
-    pub fn save(&self) {
+    fn capture_saved_state(&mut self) {
+        let mut saved = self.clone();
+        saved.saved_state = None;
+        self.saved_state = Some(Box::new(saved));
+    }
+
+    pub fn has_unsaved_changes(&self) -> bool {
+        if let Some(ref saved) = self.saved_state {
+            self.show_line_numbers != saved.show_line_numbers
+                || self.word_wrap != saved.word_wrap
+                || self.font_size != saved.font_size
+                || self.tab_size != saved.tab_size
+                || self.use_spaces != saved.use_spaces
+                || self.show_whitespace != saved.show_whitespace
+                || self.vim_mode != saved.vim_mode
+                || self.auto_save != saved.auto_save
+                || self.auto_save_interval != saved.auto_save_interval
+                || self.sidebar_visible != saved.sidebar_visible
+                || self.status_bar_visible != saved.status_bar_visible
+                || self.search_ignore_dirs_enabled != saved.search_ignore_dirs_enabled
+                || self.search_ignored_dirs != saved.search_ignored_dirs
+                || self.search_min_chars != saved.search_min_chars
+                || self.highlight_current_line != saved.highlight_current_line
+                || self.auto_indent != saved.auto_indent
+                || self.scroll_beyond_last_line != saved.scroll_beyond_last_line
+                || self.minimap != saved.minimap
+                || self.recent_files_limit != saved.recent_files_limit
+                || self.recent_projects_limit != saved.recent_projects_limit
+                || self.corner_roundness != saved.corner_roundness
+        } else {
+            false
+        }
+    }
+
+    pub fn apply_changes(&mut self) {
+        self.save();
+        self.capture_saved_state();
+    }
+
+    pub fn discard_changes(&mut self) {
+        if let Some(ref saved) = self.saved_state {
+            self.show_line_numbers = saved.show_line_numbers;
+            self.word_wrap = saved.word_wrap;
+            self.font_size = saved.font_size;
+            self.tab_size = saved.tab_size;
+            self.use_spaces = saved.use_spaces;
+            self.show_whitespace = saved.show_whitespace;
+            self.vim_mode = saved.vim_mode;
+            self.auto_save = saved.auto_save;
+            self.auto_save_interval = saved.auto_save_interval;
+            self.sidebar_visible = saved.sidebar_visible;
+            self.status_bar_visible = saved.status_bar_visible;
+            self.search_ignore_dirs_enabled = saved.search_ignore_dirs_enabled;
+            self.search_ignored_dirs = saved.search_ignored_dirs.clone();
+            self.search_min_chars = saved.search_min_chars;
+            self.highlight_current_line = saved.highlight_current_line;
+            self.auto_indent = saved.auto_indent;
+            self.scroll_beyond_last_line = saved.scroll_beyond_last_line;
+            self.minimap = saved.minimap;
+            self.recent_files_limit = saved.recent_files_limit;
+            self.recent_projects_limit = saved.recent_projects_limit;
+            self.corner_roundness = saved.corner_roundness;
+        }
+    }
+
+    fn save(&self) {
         if let Some(path) = settings_file_path() {
             if let Some(dir) = path.parent() {
                 let _ = std::fs::create_dir_all(dir);
@@ -137,6 +232,157 @@ impl Settings {
             .show(ctx, |ui| {
                 self.show_content(ui);
             });
+
+        self.show_confirm_discard_dialog(ctx);
+    }
+
+    pub fn show_confirm_discard_dialog(&mut self, ctx: &egui::Context) {
+        if !self.confirm_discard_open {
+            return;
+        }
+
+        let screen_rect = ctx.screen_rect();
+
+        egui::Area::new(egui::Id::new("settings_dim_overlay"))
+            .fixed_pos(screen_rect.min)
+            .show(ctx, |ui| {
+                ui.painter().rect_filled(
+                    screen_rect,
+                    0.0,
+                    egui::Color32::from_rgba_premultiplied(0, 0, 0, 120),
+                );
+            });
+
+        let modal_frame = egui::Frame::none()
+            .fill(theme::CherryBlossomTheme::BG_DARKEST)
+            .rounding(12.0)
+            .stroke(egui::Stroke::new(1.0, theme::CherryBlossomTheme::BG_LIGHT))
+            .inner_margin(egui::Margin::symmetric(32, 28))
+            .shadow(egui::epaint::Shadow {
+                offset: [0, 8],
+                blur: 16,
+                spread: 0,
+                color: egui::Color32::from_rgba_premultiplied(0, 0, 0, 80),
+            });
+
+        egui::Window::new("")
+            .collapsible(false)
+            .resizable(false)
+            .movable(false)
+            .title_bar(false)
+            .frame(modal_frame)
+            .default_size([340.0, 160.0])
+            .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.label(
+                        egui::RichText::new("Unsaved Changes")
+                            .size(18.0)
+                            .strong()
+                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                    );
+                    ui.add_space(12.0);
+                    ui.label(
+                        egui::RichText::new("You have unsaved settings changes.")
+                            .size(14.0)
+                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY),
+                    );
+                    ui.label(
+                        egui::RichText::new("Discard them?")
+                            .size(14.0)
+                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY),
+                    );
+                    ui.add_space(24.0);
+
+                    ui.horizontal(|ui| {
+                        ui.add_space(ui.available_width() / 2.0 - 130.0);
+
+                        let discard_btn = ui.add_sized(
+                            [120.0, 36.0],
+                            egui::Button::new(
+                                egui::RichText::new("Discard")
+                                    .size(14.0)
+                                    .strong()
+                                    .color(theme::CherryBlossomTheme::BG_DARKEST),
+                            )
+                            .rounding(8.0)
+                            .fill(theme::CherryBlossomTheme::ACCENT_PINK),
+                        );
+                        if discard_btn.clicked() {
+                            self.discard_changes();
+                            self.confirm_discard_open = false;
+                            if self.pending_file_open.is_some() || self.pending_new_tab {
+                            } else {
+                                self.close_after_discard = true;
+                            }
+                        }
+
+                        ui.add_space(12.0);
+
+                        let cancel_btn = ui.add_sized(
+                            [120.0, 36.0],
+                            egui::Button::new(
+                                egui::RichText::new("Cancel")
+                                    .size(14.0)
+                                    .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                            )
+                            .rounding(8.0)
+                            .fill(theme::CherryBlossomTheme::BG_MID),
+                        );
+                        if cancel_btn.clicked() {
+                            self.confirm_discard_open = false;
+                            self.pending_file_open = None;
+                            self.pending_new_tab = false;
+                        }
+                    });
+                });
+            });
+    }
+
+    pub fn request_close_with_confirmation(&mut self) -> bool {
+        if self.has_unsaved_changes() {
+            self.confirm_discard_open = true;
+            false
+        } else {
+            true
+        }
+    }
+
+    pub fn request_file_open_with_confirmation(
+        &mut self,
+        path: std::path::PathBuf,
+        content: String,
+    ) -> bool {
+        if self.has_unsaved_changes() {
+            self.pending_file_open = Some((path, content));
+            self.confirm_discard_open = true;
+            false
+        } else {
+            true
+        }
+    }
+
+    pub fn take_pending_file_open(&mut self) -> Option<(std::path::PathBuf, String)> {
+        self.pending_file_open.take()
+    }
+
+    pub fn request_new_tab_with_confirmation(&mut self) -> bool {
+        if self.has_unsaved_changes() {
+            self.pending_new_tab = true;
+            self.confirm_discard_open = true;
+            false
+        } else {
+            true
+        }
+    }
+
+    pub fn take_pending_new_tab(&mut self) -> bool {
+        if self.pending_new_tab {
+            self.pending_new_tab = false;
+            true
+        } else {
+            false
+        }
     }
 
     pub fn show_content(&mut self, ui: &mut egui::Ui) {
@@ -156,14 +402,56 @@ impl Settings {
             );
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button("Edit as JSON").clicked() {
+                let btn_height = 28.0;
+                let btn_rounding = self.corner_roundness as u8;
+
+                if self.has_unsaved_changes() {
+                    let apply_btn = ui.add_sized(
+                        [100.0, btn_height],
+                        egui::Button::new(
+                            egui::RichText::new("Apply Changes")
+                                .size(13.0)
+                                .strong()
+                                .color(theme::CherryBlossomTheme::BG_DARKEST),
+                        )
+                        .rounding(btn_rounding)
+                        .fill(theme::CherryBlossomTheme::ACCENT_PINK),
+                    );
+                    if apply_btn.clicked() {
+                        self.apply_changes_clicked = true;
+                    }
+                    ui.add_space(8.0);
+                }
+
+                let json_btn = ui.add_sized(
+                    [90.0, btn_height],
+                    egui::Button::new(
+                        egui::RichText::new("Edit as JSON")
+                            .size(13.0)
+                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                    )
+                    .rounding(btn_rounding)
+                    .fill(theme::CherryBlossomTheme::BG_MID),
+                );
+                if json_btn.clicked() {
                     self.edit_as_json_clicked = true;
                 }
 
                 ui.add_space(8.0);
 
-                if ui.button("Reset Settings").clicked() {
+                let reset_btn = ui.add_sized(
+                    [95.0, btn_height],
+                    egui::Button::new(
+                        egui::RichText::new("Reset Settings")
+                            .size(13.0)
+                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                    )
+                    .rounding(btn_rounding)
+                    .fill(theme::CherryBlossomTheme::BG_MID),
+                );
+                if reset_btn.clicked() {
                     *self = Self::default();
+                    self.capture_saved_state();
                 }
 
                 ui.add_space(8.0);
@@ -196,22 +484,27 @@ impl Settings {
         ui.horizontal(|ui| {
             ui.add_space(6.0);
 
-            let sidebar_width = 130.0;
+            let sidebar_width = 140.0;
+            let item_height = 36.0;
+            let corner_radius = 8.0;
+
             ui.allocate_ui_with_layout(
                 egui::vec2(sidebar_width, content_height),
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| {
                     ui.set_width(sidebar_width);
+                    ui.add_space(8.0);
 
                     for category in [
                         SettingsCategory::Editor,
+                        SettingsCategory::Appearance,
                         SettingsCategory::Workbench,
                         SettingsCategory::Search,
                     ] {
                         let is_selected = self.selected_category == category;
 
                         let (rect, response) = ui.allocate_exact_size(
-                            egui::vec2(sidebar_width, 32.0),
+                            egui::vec2(sidebar_width - 8.0, item_height),
                             egui::Sense::click(),
                         );
 
@@ -223,27 +516,30 @@ impl Settings {
                             CherryBlossomTheme::BG_DARK
                         };
 
-                        ui.painter().rect_filled(rect, 4.0, bg_color);
+                        ui.painter().rect_filled(rect, corner_radius, bg_color);
 
                         if is_selected {
-                            ui.painter().line_segment(
-                                [rect.left_top(), rect.left_bottom()],
-                                egui::Stroke::new(3.0, CherryBlossomTheme::ACCENT_PINK),
+                            let indicator_rect = egui::Rect::from_min_size(
+                                rect.left_top() + egui::vec2(4.0, 8.0),
+                                egui::vec2(3.0, item_height - 16.0),
                             );
+                            ui.painter().rect_filled(indicator_rect, 1.5, CherryBlossomTheme::ACCENT_PINK);
                         }
 
-                        let text = format!("{}  {}", category.icon(), category.name());
+                        let text = format!("{}", category.name());
                         let text_color = if is_selected {
                             CherryBlossomTheme::TEXT_PRIMARY
                         } else {
                             CherryBlossomTheme::TEXT_SECONDARY
                         };
 
+                        let text_x = if is_selected { 16.0 } else { 12.0 };
+
                         ui.painter().text(
-                            rect.left_center() + egui::vec2(6.0, 0.0),
+                            rect.left_center() + egui::vec2(text_x, 0.0),
                             egui::Align2::LEFT_CENTER,
                             text,
-                            egui::FontId::new(13.0, egui::FontFamily::Proportional),
+                            egui::FontId::new(14.0, egui::FontFamily::Proportional),
                             text_color,
                         );
 
@@ -251,7 +547,7 @@ impl Settings {
                             self.selected_category = category;
                         }
 
-                        ui.add_space(2.0);
+                        ui.add_space(4.0);
                     }
                 },
             );
@@ -270,6 +566,9 @@ impl Settings {
                     egui::ScrollArea::vertical().show(ui, |ui| match self.selected_category {
                         SettingsCategory::Editor => {
                             self.show_editor_settings(ui, has_search, &self.search_query.clone())
+                        }
+                        SettingsCategory::Appearance => {
+                            self.show_appearance_settings(ui, has_search, &self.search_query.clone())
                         }
                         SettingsCategory::Workbench => {
                             self.show_workbench_settings(ui, has_search, &self.search_query.clone())
@@ -488,44 +787,61 @@ impl Settings {
         }
     }
 
-    fn show_workbench_settings(&mut self, ui: &mut egui::Ui, has_search: bool, query: &str) {
+    fn show_appearance_settings(&mut self, ui: &mut egui::Ui, has_search: bool, query: &str) {
         use theme::CherryBlossomTheme;
         let query = query.to_lowercase();
 
-        if !has_search || self.matches_search(&query, &["appearance", "sidebar", "status bar"]) {
-            self.setting_card(ui, "Appearance", |ui, settings| {
-                settings.cozy_row_filtered(
-                    ui,
-                    has_search,
-                    &query,
-                    "Sidebar",
-                    "Show the left sidebar",
-                    |ui, settings| {
-                        ui.checkbox(&mut settings.sidebar_visible, "");
-                    },
-                );
-                settings.cozy_row_filtered(
-                    ui,
-                    has_search,
-                    &query,
-                    "Status bar",
-                    "Show the bottom status bar",
-                    |ui, settings| {
-                        ui.checkbox(&mut settings.status_bar_visible, "");
-                    },
-                );
-                settings.cozy_row_filtered(
-                    ui,
-                    has_search,
-                    &query,
-                    "Minimap",
-                    "Show code minimap on the right",
-                    |ui, settings| {
-                        ui.checkbox(&mut settings.minimap, "");
-                    },
-                );
-            });
-        }
+        self.setting_card(ui, "UI Elements", |ui, settings| {
+            settings.cozy_row_filtered(
+                ui,
+                has_search,
+                &query,
+                "Sidebar",
+                "Show the left sidebar",
+                |ui, settings| {
+                    ui.checkbox(&mut settings.sidebar_visible, "");
+                },
+            );
+            settings.cozy_row_filtered(
+                ui,
+                has_search,
+                &query,
+                "Status bar",
+                "Show the bottom status bar",
+                |ui, settings| {
+                    ui.checkbox(&mut settings.status_bar_visible, "");
+                },
+            );
+            settings.cozy_row_filtered(
+                ui,
+                has_search,
+                &query,
+                "Minimap",
+                "Show code minimap on the right",
+                |ui, settings| {
+                    ui.checkbox(&mut settings.minimap, "");
+                },
+            );
+            settings.cozy_row_filtered(
+                ui,
+                has_search,
+                &query,
+                "Corner roundness",
+                "UI element corner radius",
+                |ui, settings| {
+                    ui.add(
+                        egui::Slider::new(&mut settings.corner_roundness, 0.0..=20.0)
+                            .show_value(true)
+                            .text("px"),
+                    );
+                },
+            );
+        });
+    }
+
+    fn show_workbench_settings(&mut self, ui: &mut egui::Ui, has_search: bool, query: &str) {
+        use theme::CherryBlossomTheme;
+        let query = query.to_lowercase();
 
         if !has_search || self.matches_search(&query, &["recent", "files", "projects", "history"]) {
             self.setting_card(ui, "Recent Items", |ui, settings| {
@@ -634,7 +950,7 @@ impl Settings {
 
         egui::Frame::group(ui.style())
             .fill(CherryBlossomTheme::BG_DARK)
-            .rounding(8.0)
+            .rounding(self.corner_roundness)
             .stroke(egui::Stroke::new(1.0, CherryBlossomTheme::BG_LIGHT))
             .inner_margin(egui::Margin::same(card_margin as i8))
             .show(ui, |ui| {
@@ -740,6 +1056,7 @@ impl Settings {
             "Auto indent" => "automatic indentation",
             "Scroll beyond last line" => "overscroll end of file",
             "Minimap" => "code overview zoomout",
+            "Corner roundness" => "border radius curve",
             _ => "",
         }
     }
