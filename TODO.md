@@ -17,5 +17,6 @@
 ## Plans:
 
 - Want to add a proper OpenCSS system that lets users make their own themes using CSS
+- Add Active Indicator
 
 ---
