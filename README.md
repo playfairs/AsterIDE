@@ -21,6 +21,7 @@ I made AsterIDE as a fun side Project with one thing in mind, to make a silly Te
 <summary>Apple could not verify "AsterIDE" is free of Malware that may harm your Mac or compromise your privacy.</summary>
 
 ![effect](./assets/docs/mac-install-fails/error-example.png)
+
 Image of subject warning
 
 Becasue we don't have $100/A$150 dollars to spend to become a recognized developer for Apple-
