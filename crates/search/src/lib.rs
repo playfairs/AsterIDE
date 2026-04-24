@@ -1,4 +1,3 @@
-use theme::CherryBlossomTheme;
 
 #[derive(Clone, Default, Debug)]
 pub struct SearchState {
@@ -87,7 +86,7 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             ui.label(
                 egui::RichText::new("🔍")
                     .size(16.0)
-                    .color(CherryBlossomTheme::TEXT_MUTED),
+                    .color(theme::CherryBlossomTheme::TEXT_MUTED()),
             );
 
             ui.add_space(8.0);
@@ -114,9 +113,9 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             ui.add_space(10.0);
 
             let case_color = if state.case_sensitive {
-                CherryBlossomTheme::ACCENT_PINK
+                theme::CherryBlossomTheme::ACCENT_PINK()
             } else {
-                CherryBlossomTheme::TEXT_MUTED
+                theme::CherryBlossomTheme::TEXT_MUTED()
             };
             if ui
                 .add(
@@ -129,9 +128,9 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             }
 
             let word_color = if state.whole_word {
-                CherryBlossomTheme::ACCENT_PINK
+                theme::CherryBlossomTheme::ACCENT_PINK()
             } else {
-                CherryBlossomTheme::TEXT_MUTED
+                theme::CherryBlossomTheme::TEXT_MUTED()
             };
             if ui
                 .add(
@@ -144,9 +143,9 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             }
 
             let regex_color = if state.use_regex {
-                CherryBlossomTheme::ACCENT_PINK
+                theme::CherryBlossomTheme::ACCENT_PINK()
             } else {
-                CherryBlossomTheme::TEXT_MUTED
+                theme::CherryBlossomTheme::TEXT_MUTED()
             };
             if ui
                 .add(
@@ -164,7 +163,7 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
             ui.label(
                 egui::RichText::new("↔")
                     .size(16.0)
-                    .color(CherryBlossomTheme::TEXT_MUTED),
+                    .color(theme::CherryBlossomTheme::TEXT_MUTED()),
             );
             ui.add_space(8.0);
             ui.add_sized(
@@ -184,10 +183,10 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                 egui::vec2(80.0, button_height),
                 egui::Button::new(
                     egui::RichText::new("Search")
-                        .color(CherryBlossomTheme::BG_DARKEST)
+                        .color(theme::CherryBlossomTheme::BG_DARKEST())
                         .strong(),
                 )
-                .fill(CherryBlossomTheme::ACCENT_PINK),
+                .fill(theme::CherryBlossomTheme::ACCENT_PINK()),
             );
             if search_btn.clicked() {
                 ui.ctx().data_mut(|d| {
@@ -214,13 +213,13 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                 if !state.results.is_empty() {
                     ui.label(
                         egui::RichText::new(format!("{} matches", state.results.len()))
-                            .color(CherryBlossomTheme::TEXT_MUTED)
+                            .color(theme::CherryBlossomTheme::TEXT_MUTED())
                             .size(12.0),
                     );
                 } else if !state.query.is_empty() {
                     ui.label(
                         egui::RichText::new("No results")
-                            .color(CherryBlossomTheme::TEXT_MUTED)
+                            .color(theme::CherryBlossomTheme::TEXT_MUTED())
                             .size(12.0),
                     );
                 }
@@ -236,7 +235,7 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                     ui.centered_and_justified(|ui| {
                         ui.label(
                             egui::RichText::new("Enter a search query to find across open files")
-                                .color(CherryBlossomTheme::TEXT_MUTED)
+                                .color(theme::CherryBlossomTheme::TEXT_MUTED())
                                 .size(14.0),
                         );
                     });
@@ -251,7 +250,7 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                             ui.label(egui::RichText::new("📄 ").size(12.0));
                             ui.label(
                                 egui::RichText::new(&result.file_path)
-                                    .color(CherryBlossomTheme::ACCENT_PINK)
+                                    .color(theme::CherryBlossomTheme::ACCENT_PINK())
                                     .size(12.0)
                                     .strong(),
                             );
@@ -263,9 +262,9 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                     let is_current = i == state.current_result;
 
                     let bg_color = if is_current {
-                        CherryBlossomTheme::BG_DARK
+                        theme::CherryBlossomTheme::BG_DARK()
                     } else {
-                        CherryBlossomTheme::BG_DARKEST
+                        theme::CherryBlossomTheme::BG_DARKEST()
                     };
 
                     let response = egui::Frame::new()
@@ -277,7 +276,7 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                                     egui::vec2(50.0, 18.0),
                                     egui::Label::new(
                                         egui::RichText::new(format!("{}", result.line))
-                                            .color(CherryBlossomTheme::TEXT_MUTED)
+                                            .color(theme::CherryBlossomTheme::TEXT_MUTED())
                                             .monospace()
                                             .size(12.0),
                                     ),
@@ -301,18 +300,18 @@ pub fn show_search_tab(ui: &mut egui::Ui, state: &mut SearchState, min_chars: us
                                 ui.horizontal(|ui| {
                                     ui.monospace(
                                         egui::RichText::new(before)
-                                            .color(CherryBlossomTheme::TEXT_SECONDARY)
+                                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY())
                                             .size(12.0),
                                     );
                                     ui.monospace(
                                         egui::RichText::new(matched)
-                                            .color(CherryBlossomTheme::ACCENT_HOT)
+                                            .color(theme::CherryBlossomTheme::ACCENT_HOT())
                                             .strong()
                                             .size(12.0),
                                     );
                                     ui.monospace(
                                         egui::RichText::new(after)
-                                            .color(CherryBlossomTheme::TEXT_SECONDARY)
+                                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY())
                                             .size(12.0),
                                     );
                                 });
@@ -341,12 +340,12 @@ pub fn show_search_button(ui: &mut egui::Ui) {
         ui.label(
             egui::RichText::new("🔍")
                 .size(32.0)
-                .color(CherryBlossomTheme::TEXT_MUTED),
+                .color(theme::CherryBlossomTheme::TEXT_MUTED()),
         );
         ui.add_space(10.0);
         ui.label(
             egui::RichText::new("Click the search icon above\nor press Ctrl+Shift+F")
-                .color(CherryBlossomTheme::TEXT_MUTED)
+                .color(theme::CherryBlossomTheme::TEXT_MUTED())
                 .size(11.0),
         );
     });

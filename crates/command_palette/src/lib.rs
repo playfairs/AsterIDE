@@ -33,7 +33,7 @@ impl CommandPalette {
                     ui.label(
                         egui::RichText::new(">")
                             .size(20.0)
-                            .color(CherryBlossomTheme::ACCENT_PINK),
+                            .color(CherryBlossomTheme::ACCENT_PINK()),
                     );
 
                     let response = ui.text_edit_singleline(&mut self.query);
@@ -71,7 +71,7 @@ impl CommandPalette {
                                 ui.label(
                                     egui::RichText::new(name)
                                         .size(14.0)
-                                        .color(CherryBlossomTheme::TEXT_PRIMARY),
+                                        .color(CherryBlossomTheme::TEXT_PRIMARY()),
                                 );
 
                                 ui.with_layout(
@@ -79,7 +79,7 @@ impl CommandPalette {
                                     |ui| {
                                         ui.label(
                                             egui::RichText::new(desc).size(12.0).color(
-                                                CherryBlossomTheme::TEXT_MUTED,
+                                                CherryBlossomTheme::TEXT_MUTED(),
                                             ),
                                         );
                                     },

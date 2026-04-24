@@ -483,7 +483,7 @@ impl AsterIDE {
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.style_mut().visuals.widgets.inactive.weak_bg_fill =
-                        CherryBlossomTheme::BG_DARK;
+                        CherryBlossomTheme::BG_DARK();
 
                     egui::MenuBar::new().ui(ui, |ui| {
                         ui.menu_button("File", |ui| {
@@ -596,7 +596,14 @@ impl AsterIDE {
 
                     let button_size = egui::vec2(40.0, 40.0);
 
-                    let explorer_active = self.active_sidebar_tab == SidebarTab::Explorer;
+                    let active_tab_type = self.tabs.active_tab()
+                        .map(|t| t.tab_type)
+                        .unwrap_or(TabType::File);
+                    
+                    // Explorer is only active when sidebar tab is Explorer AND current tab is a file
+                    let explorer_active = self.active_sidebar_tab == SidebarTab::Explorer 
+                        && active_tab_type == TabType::File;
+                    
                     if self.icon_button(ui, "📁", "Explorer", explorer_active, button_size) {
                         self.toggle_sidebar(SidebarTab::Explorer);
                     }
@@ -642,17 +649,17 @@ impl AsterIDE {
 
         let _visuals = ui.style().interact(&response);
         let bg_color = if active {
-            CherryBlossomTheme::BG_LIGHTER
+            CherryBlossomTheme::BG_LIGHTER()
         } else if response.hovered() {
-            CherryBlossomTheme::BG_LIGHT
+            CherryBlossomTheme::BG_LIGHT()
         } else {
-            CherryBlossomTheme::BG_DARK
+            CherryBlossomTheme::BG_DARK()
         };
 
         let fg_color = if active {
-            CherryBlossomTheme::ACCENT_PINK
+            CherryBlossomTheme::ACCENT_PINK()
         } else {
-            CherryBlossomTheme::TEXT_SECONDARY
+            CherryBlossomTheme::TEXT_SECONDARY()
         };
 
         ui.painter().rect_filled(rect, 4.0, bg_color);
@@ -666,7 +673,7 @@ impl AsterIDE {
 
         let text_pos = rect.center() - galley.size() / 2.0;
         ui.painter()
-            .galley(text_pos, galley, CherryBlossomTheme::TEXT_PRIMARY);
+            .galley(text_pos, galley, CherryBlossomTheme::TEXT_PRIMARY());
 
         response.clicked()
     }
@@ -764,11 +771,11 @@ impl AsterIDE {
                 );
 
                 let bg_color = if is_active {
-                    CherryBlossomTheme::BG_MID
+                    CherryBlossomTheme::BG_MID()
                 } else if response.hovered() {
-                    CherryBlossomTheme::BG_LIGHT
+                    CherryBlossomTheme::BG_LIGHT()
                 } else {
-                    CherryBlossomTheme::BG_DARK
+                    CherryBlossomTheme::BG_DARK()
                 };
 
                 let corner_radius = 6.0;
@@ -779,7 +786,7 @@ impl AsterIDE {
                         rect.left_top() + egui::vec2(4.0, 6.0),
                         egui::vec2(3.0, button_height - 12.0),
                     );
-                    ui.painter().rect_filled(indicator_rect, 1.5, CherryBlossomTheme::ACCENT_PINK);
+                    ui.painter().rect_filled(indicator_rect, 1.5, CherryBlossomTheme::ACCENT_PINK());
                 }
 
                 let modified_dot_x = if is_active { 18.0 } else { 14.0 };
@@ -788,14 +795,14 @@ impl AsterIDE {
                         rect.left_center() + egui::vec2(modified_dot_x, 0.0),
                         egui::vec2(6.0, 6.0),
                     );
-                    ui.painter().circle_filled(dot_rect.center(), 3.0, CherryBlossomTheme::ACCENT_HOT);
+                    ui.painter().circle_filled(dot_rect.center(), 3.0, CherryBlossomTheme::ACCENT_HOT());
                 }
 
                 let text_offset = if tab.is_modified { modified_dot_x + 12.0 } else { modified_dot_x };
                 let text_color = if is_active {
-                    CherryBlossomTheme::TEXT_PRIMARY
+                    CherryBlossomTheme::TEXT_PRIMARY()
                 } else {
-                    CherryBlossomTheme::TEXT_SECONDARY
+                    CherryBlossomTheme::TEXT_SECONDARY()
                 };
 
                 ui.painter().text(
@@ -907,8 +914,8 @@ impl AsterIDE {
             }
 
             response.context_menu(|ui| {
-                ui.style_mut().visuals.widgets.hovered.weak_bg_fill = theme::CherryBlossomTheme::BG_LIGHT;
-                ui.style_mut().visuals.widgets.hovered.bg_fill = theme::CherryBlossomTheme::BG_LIGHT;
+                ui.style_mut().visuals.widgets.hovered.weak_bg_fill = CherryBlossomTheme::BG_LIGHT();
+                ui.style_mut().visuals.widgets.hovered.bg_fill = CherryBlossomTheme::BG_LIGHT();
 
                 if !is_dir {
                     if ui.button("Open").clicked() {
@@ -978,7 +985,7 @@ impl AsterIDE {
                     self.delete_path(path.clone());
                     ui.close();
                 }
-        });
+            });
         }
 
         if is_expanded && is_dir {
@@ -1053,9 +1060,9 @@ impl AsterIDE {
                         let is_modified = tab.is_modified;
 
                         let bg_color = if is_active {
-                            CherryBlossomTheme::BG_MID
+                            CherryBlossomTheme::BG_MID()
                         } else {
-                            CherryBlossomTheme::BG_DARK
+                            CherryBlossomTheme::BG_DARK()
                         };
 
                         let prefix = if is_modified { "● " } else { "" };
@@ -1079,7 +1086,7 @@ impl AsterIDE {
                                     rect.left_top() + egui::vec2(radius, 0.0),
                                     rect.right_top() + egui::vec2(-radius, 0.0),
                                 ],
-                                egui::Stroke::new(2.0, CherryBlossomTheme::ACCENT_PINK),
+                                egui::Stroke::new(2.0, CherryBlossomTheme::ACCENT_PINK()),
                             );
                         }
 
@@ -1087,9 +1094,9 @@ impl AsterIDE {
                             label_text.clone(),
                             egui::FontId::new(12.0, egui::FontFamily::Proportional),
                             if is_active {
-                                CherryBlossomTheme::TEXT_PRIMARY
+                                CherryBlossomTheme::TEXT_PRIMARY()
                             } else {
-                                CherryBlossomTheme::TEXT_SECONDARY
+                                CherryBlossomTheme::TEXT_SECONDARY()
                             },
                             100.0,
                         );
@@ -1097,7 +1104,7 @@ impl AsterIDE {
                         let text_pos =
                             rect.left_center() + egui::vec2(10.0, -galley.size().y / 2.0);
                         ui.painter()
-                            .galley(text_pos, galley, CherryBlossomTheme::TEXT_PRIMARY);
+                            .galley(text_pos, galley, CherryBlossomTheme::TEXT_PRIMARY());
 
                         let close_rect = egui::Rect::from_min_size(
                             rect.right_top() - egui::vec2(25.0, 0.0),
@@ -1115,7 +1122,7 @@ impl AsterIDE {
                                 egui::Align2::CENTER_CENTER,
                                 "×",
                                 egui::FontId::new(16.0, egui::FontFamily::Proportional),
-                                CherryBlossomTheme::TEXT_PRIMARY,
+                                CherryBlossomTheme::TEXT_PRIMARY(),
                             );
                         }
 
@@ -1155,9 +1162,9 @@ impl AsterIDE {
                         ui.allocate_exact_size(button_size, egui::Sense::click());
 
                     let bg_color = if response.hovered() {
-                        CherryBlossomTheme::BG_LIGHT
+                        CherryBlossomTheme::BG_LIGHT()
                     } else {
-                        CherryBlossomTheme::BG_DARK
+                        CherryBlossomTheme::BG_DARK()
                     };
                     ui.painter().rect_filled(rect, 4.0, bg_color);
 
@@ -1166,7 +1173,7 @@ impl AsterIDE {
                         egui::Align2::CENTER_CENTER,
                         "+",
                         egui::FontId::new(16.0, egui::FontFamily::Proportional),
-                        CherryBlossomTheme::TEXT_PRIMARY,
+                        CherryBlossomTheme::TEXT_PRIMARY(),
                     );
 
                     if response.clicked() {
@@ -1180,7 +1187,7 @@ impl AsterIDE {
 
     fn show_welcome_screen(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default()
-            .frame(egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST))
+            .frame(egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST()))
             .show(ctx, |ui| {
                 let recent_files_data: Vec<(std::path::PathBuf, String)> = self
                     .get_relevant_recent_files()
@@ -1217,13 +1224,13 @@ impl AsterIDE {
                     ui.heading(
                         egui::RichText::new("AsterIDE 🌸")
                             .size(48.0)
-                            .color(CherryBlossomTheme::ACCENT_PINK),
+                            .color(CherryBlossomTheme::ACCENT_PINK()),
                     );
                     ui.add_space(10.0);
                     ui.label(
                         egui::RichText::new("A Simple Text Editor written in Rust.")
                             .size(16.0)
-                            .color(CherryBlossomTheme::TEXT_SECONDARY),
+                            .color(CherryBlossomTheme::TEXT_SECONDARY()),
                     );
                 });
 
@@ -1243,12 +1250,12 @@ impl AsterIDE {
                         egui::Layout::top_down(egui::Align::Center),
                         |ui| {
                             egui::Frame::group(&ui.style())
-                                .fill(CherryBlossomTheme::BG_DARK)
+                                .fill(CherryBlossomTheme::BG_DARK())
                                 .inner_margin(20.0)
-                                .stroke(egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK))
+                                .stroke(egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK()))
                                 .show(ui, |ui| {
                                     let button_size = egui::vec2(200.0, 40.0);
-                                    let button_stroke = egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK);
+                                    let button_stroke = egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK());
                                     if ui
                                         .add_sized(button_size, egui::Button::new("📄  Open File").stroke(button_stroke))
                                         .clicked()
@@ -1290,13 +1297,13 @@ impl AsterIDE {
                             egui::Layout::top_down(egui::Align::LEFT),
                             |ui| {
                                 egui::Frame::group(&ui.style())
-                                    .fill(CherryBlossomTheme::BG_DARK)
+                                    .fill(CherryBlossomTheme::BG_DARK())
                                     .inner_margin(16.0)
-                                    .stroke(egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK))
+                                    .stroke(egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK()))
                                     .show(ui, |ui| {
                                         ui.set_width(right_width - 32.0);
 
-                                        let recent_button_stroke = egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK);
+                                        let recent_button_stroke = egui::Stroke::new(1.0, CherryBlossomTheme::BORDER_PINK());
 
                                         if has_recent_files {
                                             let title = if has_project_folder {
@@ -1313,7 +1320,7 @@ impl AsterIDE {
                                             ui.label(
                                                 egui::RichText::new(title)
                                                     .size(16.0)
-                                                    .color(CherryBlossomTheme::TEXT_PRIMARY),
+                                                    .color(CherryBlossomTheme::TEXT_PRIMARY()),
                                             );
                                             ui.add_space(10.0);
 
@@ -1323,10 +1330,10 @@ impl AsterIDE {
                                                 let response = ui.add(
                                                     egui::Button::new(
                                                         egui::RichText::new(format!("📄  {}", file_path_str))
-                                                            .color(CherryBlossomTheme::TEXT_PRIMARY)
+                                                            .color(CherryBlossomTheme::TEXT_PRIMARY())
                                                             .size(12.0),
                                                     )
-                                                    .fill(CherryBlossomTheme::BG_MID)
+                                                    .fill(CherryBlossomTheme::BG_MID())
                                                     .stroke(recent_button_stroke)
                                                     .min_size(egui::vec2(right_width - 50.0, 30.0)),
                                                 );
@@ -1358,7 +1365,7 @@ impl AsterIDE {
                                             ui.label(
                                                 egui::RichText::new("Recent Projects")
                                                     .size(16.0)
-                                                    .color(CherryBlossomTheme::TEXT_PRIMARY),
+                                                    .color(CherryBlossomTheme::TEXT_PRIMARY()),
                                             );
                                             ui.add_space(10.0);
 
@@ -1368,10 +1375,10 @@ impl AsterIDE {
                                                 let response = ui.add(
                                                     egui::Button::new(
                                                         egui::RichText::new(format!("📁  {}", project_path_str))
-                                                            .color(CherryBlossomTheme::TEXT_PRIMARY)
+                                                            .color(CherryBlossomTheme::TEXT_PRIMARY())
                                                             .size(12.0),
                                                     )
-                                                    .fill(CherryBlossomTheme::BG_MID)
+                                                    .fill(CherryBlossomTheme::BG_MID())
                                                     .stroke(recent_button_stroke)
                                                     .min_size(egui::vec2(right_width - 50.0, 30.0)),
                                                 );
@@ -1411,7 +1418,7 @@ impl AsterIDE {
         if active_tab_type == TabType::Settings {
             egui::CentralPanel::default()
                 .frame(
-                    egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST),
+                    egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST()),
                 )
                 .show(ctx, |ui| {
                     ui.set_height(ui.available_height());
@@ -1440,7 +1447,7 @@ impl AsterIDE {
         if active_tab_type == TabType::SearchResults {
             egui::CentralPanel::default()
                 .frame(
-                    egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST),
+                    egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST()),
                 )
                 .show(ctx, |ui| {
                     let mut state: search::SearchState = ui.ctx().data_mut(|d| {
@@ -1473,7 +1480,7 @@ impl AsterIDE {
         let _line_number_width = if _show_line_numbers { 50.0 } else { 0.0 };
 
         egui::CentralPanel::default()
-            .frame(egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST))
+            .frame(egui::Frame::central_panel(&ctx.global_style()).fill(CherryBlossomTheme::BG_DARKEST()))
             .show(ctx, |ui| {
                 let mut text_changed = false;
                 let mut new_text = content.clone();
@@ -1519,7 +1526,7 @@ impl AsterIDE {
                     ui.label(
                         egui::RichText::new(&self.status_message)
                             .size(11.0)
-                            .color(CherryBlossomTheme::TEXT_SECONDARY),
+                            .color(CherryBlossomTheme::TEXT_SECONDARY()),
                     );
 
                     ui.add_space(ui.available_width() - 250.0);
@@ -1528,7 +1535,7 @@ impl AsterIDE {
                         ui.label(
                             egui::RichText::new(format!("{} Ln, Col {}", 1, 1))
                                 .size(11.0)
-                                .color(CherryBlossomTheme::TEXT_MUTED),
+                                .color(CherryBlossomTheme::TEXT_MUTED()),
                         );
 
                         ui.add_space(15.0);
@@ -1541,7 +1548,7 @@ impl AsterIDE {
                         ui.label(
                             egui::RichText::new(indent_text)
                                 .size(11.0)
-                                .color(CherryBlossomTheme::TEXT_MUTED),
+                                .color(CherryBlossomTheme::TEXT_MUTED()),
                         );
 
                         ui.add_space(15.0);
@@ -1549,7 +1556,7 @@ impl AsterIDE {
                         ui.label(
                             egui::RichText::new("UTF-8")
                                 .size(11.0)
-                                .color(CherryBlossomTheme::TEXT_MUTED),
+                                .color(CherryBlossomTheme::TEXT_MUTED()),
                         );
 
                         ui.add_space(15.0);
@@ -1558,7 +1565,7 @@ impl AsterIDE {
                             ui.label(
                                 egui::RichText::new("● Modified")
                                     .size(11.0)
-                                    .color(CherryBlossomTheme::ACCENT_HOT),
+                                    .color(CherryBlossomTheme::ACCENT_HOT()),
                             );
                         }
                     }
@@ -1570,8 +1577,6 @@ impl AsterIDE {
             self.tabs.close_active_tab();
         }
 
-        // basically mark a file as pending open if we try to open a file
-        // while settings have not been saved
         if !self.settings.confirm_discard_open {
             if let Some((path, content)) = self.settings.take_pending_file_open() {
                 self.tabs.open_file(path.clone(), content);
@@ -1589,7 +1594,7 @@ impl eframe::App for AsterIDE {
         ui.set_height(ui.available_height());
 
         let ctx = ui.ctx();
-        CherryBlossomTheme::apply(ctx, self.settings.corner_roundness);
+        theme::apply_theme_from_settings(ctx, self.settings.theme_variant, self.settings.corner_roundness);
 
         if let Some(path) = self.initial_path.take() {
             if path.is_file() {

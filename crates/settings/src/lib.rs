@@ -37,6 +37,8 @@ pub struct Settings {
     pub recent_files_limit: usize,
     pub recent_projects_limit: usize,
     pub corner_roundness: f32,
+    pub theme_family: theme::ThemeFamily,
+    pub theme_variant: theme::ThemeVariant,
     #[serde(skip)]
     pub selected_category: SettingsCategory,
     #[serde(skip)]
@@ -81,6 +83,8 @@ impl Default for Settings {
             recent_files_limit: 5,
             recent_projects_limit: 5,
             corner_roundness: 6.0,
+            theme_family: theme::ThemeFamily::CherryBlossom,
+            theme_variant: theme::ThemeVariant::CherryBlossomDark,
             selected_category: SettingsCategory::default(),
             search_query: String::new(),
             edit_as_json_clicked: false,
@@ -175,6 +179,8 @@ impl Settings {
                 || self.recent_files_limit != saved.recent_files_limit
                 || self.recent_projects_limit != saved.recent_projects_limit
                 || self.corner_roundness != saved.corner_roundness
+                || self.theme_family != saved.theme_family
+                || self.theme_variant != saved.theme_variant
         } else {
             false
         }
@@ -208,6 +214,8 @@ impl Settings {
             self.recent_files_limit = saved.recent_files_limit;
             self.recent_projects_limit = saved.recent_projects_limit;
             self.corner_roundness = saved.corner_roundness;
+            self.theme_family = saved.theme_family;
+            self.theme_variant = saved.theme_variant;
         }
     }
 
@@ -255,9 +263,9 @@ impl Settings {
             });
 
         let modal_frame = egui::Frame::new()
-            .fill(theme::CherryBlossomTheme::BG_DARKEST)
+            .fill(theme::CherryBlossomTheme::BG_DARKEST())
             .corner_radius(12.0)
-            .stroke(egui::Stroke::new(1.0, theme::CherryBlossomTheme::BG_LIGHT))
+            .stroke(egui::Stroke::new(1.0, theme::CherryBlossomTheme::BG_LIGHT()))
             .inner_margin(egui::Margin::symmetric(32, 28))
             .shadow(egui::epaint::Shadow {
                 offset: [0, 8],
@@ -280,18 +288,18 @@ impl Settings {
                         egui::RichText::new("Unsaved Changes")
                             .size(18.0)
                             .strong()
-                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
                     );
                     ui.add_space(12.0);
                     ui.label(
                         egui::RichText::new("You have unsaved settings changes.")
                             .size(14.0)
-                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY),
+                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY()),
                     );
                     ui.label(
                         egui::RichText::new("Discard them?")
                             .size(14.0)
-                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY),
+                            .color(theme::CherryBlossomTheme::TEXT_SECONDARY()),
                     );
                     ui.add_space(24.0);
 
@@ -304,10 +312,10 @@ impl Settings {
                                 egui::RichText::new("Discard")
                                     .size(14.0)
                                     .strong()
-                                    .color(theme::CherryBlossomTheme::BG_DARKEST),
+                                    .color(theme::CherryBlossomTheme::BG_DARKEST()),
                             )
                             .corner_radius(8.0)
-                            .fill(theme::CherryBlossomTheme::ACCENT_PINK),
+                            .fill(theme::CherryBlossomTheme::ACCENT_PINK()),
                         );
                         if discard_btn.clicked() {
                             self.discard_changes();
@@ -325,10 +333,10 @@ impl Settings {
                             egui::Button::new(
                                 egui::RichText::new("Cancel")
                                     .size(14.0)
-                                    .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                                    .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
                             )
                             .corner_radius(8.0)
-                            .fill(theme::CherryBlossomTheme::BG_MID),
+                            .fill(theme::CherryBlossomTheme::BG_MID()),
                         );
                         if cancel_btn.clicked() {
                             self.confirm_discard_open = false;
@@ -399,7 +407,7 @@ impl Settings {
                 egui::RichText::new(self.selected_category.name())
                     .size(18.0)
                     .strong()
-                    .color(CherryBlossomTheme::TEXT_PRIMARY),
+                    .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
             );
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -413,10 +421,10 @@ impl Settings {
                             egui::RichText::new("Apply Changes")
                                 .size(13.0)
                                 .strong()
-                                .color(theme::CherryBlossomTheme::BG_DARKEST),
+                                .color(theme::CherryBlossomTheme::BG_DARKEST()),
                         )
                         .corner_radius(btn_rounding)
-                        .fill(theme::CherryBlossomTheme::ACCENT_PINK),
+                        .fill(theme::CherryBlossomTheme::ACCENT_PINK()),
                     );
                     if apply_btn.clicked() {
                         self.apply_changes_clicked = true;
@@ -429,10 +437,10 @@ impl Settings {
                     egui::Button::new(
                         egui::RichText::new("Edit as JSON")
                             .size(13.0)
-                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
                     )
                     .corner_radius(btn_rounding)
-                    .fill(theme::CherryBlossomTheme::BG_MID),
+                    .fill(theme::CherryBlossomTheme::BG_MID()),
                 );
                 if json_btn.clicked() {
                     self.edit_as_json_clicked = true;
@@ -445,10 +453,10 @@ impl Settings {
                     egui::Button::new(
                         egui::RichText::new("Reset Settings")
                             .size(13.0)
-                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY),
+                            .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
                     )
                     .corner_radius(btn_rounding)
-                    .fill(theme::CherryBlossomTheme::BG_MID),
+                    .fill(theme::CherryBlossomTheme::BG_MID()),
                 );
                 if reset_btn.clicked() {
                     *self = Self::default();
@@ -466,7 +474,7 @@ impl Settings {
                 ui.label(
                     egui::RichText::new(format!("{} / {} Settings", matches, total_count))
                         .size(12.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED),
+                        .color(theme::CherryBlossomTheme::TEXT_MUTED()),
                 );
 
                 ui.add_space(16.0);
@@ -510,11 +518,11 @@ impl Settings {
                         );
 
                         let bg_color = if is_selected {
-                            CherryBlossomTheme::BG_MID
+                            theme::CherryBlossomTheme::BG_MID()
                         } else if response.hovered() {
-                            CherryBlossomTheme::BG_LIGHT
+                            theme::CherryBlossomTheme::BG_LIGHT()
                         } else {
-                            CherryBlossomTheme::BG_DARK
+                            theme::CherryBlossomTheme::BG_DARK()
                         };
 
                         ui.painter().rect_filled(rect, corner_radius, bg_color);
@@ -524,14 +532,14 @@ impl Settings {
                                 rect.left_top() + egui::vec2(4.0, 8.0),
                                 egui::vec2(3.0, item_height - 16.0),
                             );
-                            ui.painter().rect_filled(indicator_rect, 1.5, CherryBlossomTheme::ACCENT_PINK);
+                            ui.painter().rect_filled(indicator_rect, 1.5, theme::CherryBlossomTheme::ACCENT_PINK());
                         }
 
                         let text = format!("{}", category.name());
                         let text_color = if is_selected {
-                            CherryBlossomTheme::TEXT_PRIMARY
+                            theme::CherryBlossomTheme::TEXT_PRIMARY()
                         } else {
-                            CherryBlossomTheme::TEXT_SECONDARY
+                            theme::CherryBlossomTheme::TEXT_SECONDARY()
                         };
 
                         let text_x = if is_selected { 16.0 } else { 12.0 };
@@ -790,6 +798,63 @@ impl Settings {
     fn show_appearance_settings(&mut self, ui: &mut egui::Ui, has_search: bool, query: &str) {
         let query = query.to_lowercase();
 
+        if !has_search || self.matches_search(&query, &["theme", "color scheme"]) {
+            self.setting_card(ui, "Theme", |ui, settings| {
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Theme Family",
+                    "Select the theme family",
+                    |ui, settings| {
+                        egui::ComboBox::from_id_salt("settings_theme_family")
+                            .selected_text(settings.theme_family.name())
+                            .width(140.0)
+                            .show_ui(ui, |ui| {
+                                for family in theme::ThemeManager::all_families() {
+                                    if ui
+                                        .selectable_label(
+                                            settings.theme_family == *family,
+                                            family.name(),
+                                        )
+                                        .clicked()
+                                    {
+                                        settings.theme_family = *family;
+                                        settings.theme_variant = family.default_variant();
+                                    }
+                                }
+                            });
+                    },
+                );
+                settings.cozy_row_filtered(
+                    ui,
+                    has_search,
+                    &query,
+                    "Theme Variant",
+                    "Select the theme variant",
+                    |ui, settings| {
+                        egui::ComboBox::from_id_salt("settings_theme_variant")
+                            .selected_text(settings.theme_variant.name())
+                            .width(140.0)
+                            .show_ui(ui, |ui| {
+                                for &variant in settings.theme_family.variants() {
+                                    if ui
+                                        .selectable_label(
+                                            settings.theme_variant == variant,
+                                            variant.name(),
+                                        )
+                                        .clicked()
+                                    {
+                                        settings.theme_variant = variant;
+                                    }
+                                }
+                            });
+                    },
+                );
+            });
+            ui.add_space(12.0);
+        }
+
         self.setting_card(ui, "UI Elements", |ui, settings| {
             settings.cozy_row_filtered(
                 ui,
@@ -895,12 +960,12 @@ impl Settings {
                 ui.label(
                     egui::RichText::new("Ignored patterns")
                         .size(13.0)
-                        .color(CherryBlossomTheme::TEXT_PRIMARY),
+                        .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
                 );
                 ui.label(
                     egui::RichText::new("Comma-separated, use * for wildcards")
                         .size(11.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED),
+                        .color(theme::CherryBlossomTheme::TEXT_MUTED()),
                 );
                 ui.add_space(4.0);
                 ui.add(
@@ -911,7 +976,7 @@ impl Settings {
                 ui.label(
                     egui::RichText::new("Examples: .git, node_modules, *venv")
                         .size(11.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED),
+                        .color(theme::CherryBlossomTheme::TEXT_MUTED()),
                 );
                 ui.add_space(16.0);
             }
@@ -947,9 +1012,9 @@ impl Settings {
         let card_margin = 16.0;
 
         egui::Frame::group(ui.style())
-            .fill(CherryBlossomTheme::BG_DARK)
+            .fill(theme::CherryBlossomTheme::BG_DARK())
             .corner_radius(self.corner_roundness)
-            .stroke(egui::Stroke::new(1.0, CherryBlossomTheme::BG_LIGHT))
+            .stroke(egui::Stroke::new(1.0, theme::CherryBlossomTheme::BG_LIGHT()))
             .inner_margin(egui::Margin::same(card_margin as i8))
             .show(ui, |ui| {
                 ui.set_width(ui.available_width());
@@ -958,7 +1023,7 @@ impl Settings {
                     egui::RichText::new(title)
                         .size(14.0)
                         .strong()
-                        .color(CherryBlossomTheme::TEXT_PRIMARY),
+                        .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
                 );
 
                 ui.add_space(12.0);
@@ -968,7 +1033,7 @@ impl Settings {
                         ui.cursor().left_center(),
                         ui.cursor().left_center() + egui::vec2(ui.available_width(), 0.0),
                     ],
-                    egui::Stroke::new(1.0, CherryBlossomTheme::BG_LIGHT),
+                    egui::Stroke::new(1.0, theme::CherryBlossomTheme::BG_LIGHT()),
                 );
                 ui.add_space(12.0);
 
@@ -994,12 +1059,12 @@ impl Settings {
                 ui.label(
                     egui::RichText::new(title)
                         .size(13.0)
-                        .color(CherryBlossomTheme::TEXT_PRIMARY),
+                        .color(theme::CherryBlossomTheme::TEXT_PRIMARY()),
                 );
                 ui.label(
                     egui::RichText::new(description)
                         .size(11.0)
-                        .color(CherryBlossomTheme::TEXT_MUTED),
+                        .color(theme::CherryBlossomTheme::TEXT_MUTED()),
                 );
             });
 
