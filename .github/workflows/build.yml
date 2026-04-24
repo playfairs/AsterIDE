@@ -18,8 +18,62 @@ jobs:
         with:
           name: asteride-macos-${{ github.sha }}
           path: build/*
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build Windows binary
+        run: |
+          cargo build --release --target x86_64-pc-windows-msvc
+          New-Item -ItemType Directory -Force -Path build
+          if (Test-Path target/x86_64-pc-windows-msvc/release/asteride.exe) {
+            Copy-Item target/x86_64-pc-windows-msvc/release/asteride.exe build/asteride.exe
+          } elseif (Test-Path target/x86_64-pc-windows-msvc/release/asteride) {
+            Copy-Item target/x86_64-pc-windows-msvc/release/asteride build/asteride.exe
+          } else {
+            Write-Host "Binary not found, listing target directory:"
+            Get-ChildItem -Path target/x86_64-pc-windows-msvc/release -Recurse
+            exit 1
+          }
+        shell: powershell
+      - name: Create Windows archive
+        run: |
+          if (Test-Path build/asteride.exe) {
+            New-Item -ItemType Directory -Force -Path temp_archive
+            Copy-Item build/asteride.exe temp_archive/
+            Compress-Archive -Path temp_archive/* -DestinationPath build/AsterIDE-Windows-${{ github.sha }}.zip
+            Remove-Item -Recurse -Force temp_archive
+          } else {
+            Write-Host "Binary not found, checking target directory"
+            Get-ChildItem -Path target/x86_64-pc-windows-msvc/release -Recurse
+            exit 1
+          }
+        shell: powershell
+      - uses: actions/upload-artifact@v6
+        with:
+          name: asteride-windows-${{ github.sha }}
+          path: build/*.zip
+  
   release:
-    needs: [build-macos]
+    needs: [build-macos, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
@@ -30,6 +84,11 @@ jobs:
         with:
           name: asteride-macos-${{ github.sha }}
           path: release
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: asteride-windows-${{ github.sha }}
+          path: release
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
@@ -37,5 +96,6 @@ jobs:
           draft: true
           files: |
             release/AsterIDE.dmg
+            release/*.zip
           name: AsterIDE ${{ github.ref_name }}
           fail_on_unmatched_files: true
