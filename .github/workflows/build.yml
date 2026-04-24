@@ -30,7 +30,8 @@ jobs:
           fetch-depth: 0
       - name: Set short SHA
         run: |
-          $shortSha = ${{ github.sha }}.Substring(0, 7)
+          $sha = "${{ github.sha }}"
+          $shortSha = $sha.Substring(0, 7)
           echo "SHORT_SHA=$shortSha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: powershell
       - name: Install Rust
