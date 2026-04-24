@@ -29,7 +29,10 @@ jobs:
           submodules: true
           fetch-depth: 0
       - name: Set short SHA
-        run: echo "SHORT_SHA=${{ github.sha }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        run: |
+          $shortSha = ${{ github.sha }}.Substring(0, 7)
+          echo "SHORT_SHA=$shortSha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: powershell
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
