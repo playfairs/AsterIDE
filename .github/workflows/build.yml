@@ -8,8 +8,6 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
-      - name: Set short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
       - uses: DeterminateSystems/nix-installer-action@v14
       - name: Build and package
         run: nix develop -c just create-mac-dmg
@@ -18,7 +16,7 @@ jobs:
           xattr -rd com.apple.quarantine build/AsterIDE.dmg 2>/dev/null || true
       - uses: actions/upload-artifact@v6
         with:
-          name: asteride-macos-${{ env.SHORT_SHA }}
+          name: asteride-macos-${{ github.sha }}
           path: build/*
   release:
     needs: [build-macos]
@@ -27,12 +25,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Set short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
-          name: asteride-macos-${{ env.SHORT_SHA }}
+          name: asteride-macos-${{ github.sha }}
           path: release
       - name: Create release
         uses: softprops/action-gh-release@v2
