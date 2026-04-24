@@ -17,7 +17,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         with:
           name: asteride-macos-${{ github.sha }}
-          path: build/*
+          path: build/AsterIDE.dmg
 
   build-windows:
     runs-on: windows-latest
@@ -71,6 +71,10 @@ jobs:
         with:
           name: asteride-windows-${{ github.sha }}
           path: build/*.zip
+      - uses: actions/upload-artifact@v6
+        with:
+          name: asteride-windows-exe-${{ github.sha }}
+          path: build/asteride.exe
   
   release:
     needs: [build-macos, build-windows]
@@ -89,6 +93,11 @@ jobs:
         with:
           name: asteride-windows-${{ github.sha }}
           path: release
+      - name: Download Windows exe artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: asteride-windows-exe-${{ github.sha }}
+          path: release
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
@@ -97,5 +106,6 @@ jobs:
           files: |
             release/AsterIDE.dmg
             release/*.zip
+            release/asteride.exe
           name: AsterIDE ${{ github.ref_name }}
           fail_on_unmatched_files: true
