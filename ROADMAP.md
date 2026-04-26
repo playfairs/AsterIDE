@@ -1,6 +1,10 @@
 ## Fixes
 
-- Fix the text on the Home Page so it's no longer selectable
+
+---
+
+## Structure
+
 
 ---
 
@@ -12,8 +16,8 @@
 - Multi Language Integrated LSP
 - Proper Syntax Highlighting for over 30 Programming Languages
 - Tree like Appearance for Explorer Structure
-- Add Windows, and Linux Support (For Linux make sure both Wayland and X11 work properly)
+- Add Linux Support.
 - Setup GitHub workflows for Building the App files.
-
+- Add coloring for Curly Brackets, Braces, and Parenthesis.
 
 ---
