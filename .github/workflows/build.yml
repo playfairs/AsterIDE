@@ -19,6 +19,34 @@ jobs:
           name: asteride-macos-${{ github.sha }}
           path: build/AsterIDE.dmg
 
+  build-freebsd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: Build in FreeBSD VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y curl git rust gmake
+          run: |
+            cargo build --release
+            mkdir -p build
+            if [ -f target/release/asteride ]; then
+              cp target/release/asteride build/asteride-freebsd
+            else
+              echo "Binary not found"
+              ls -la target/release/
+              exit 1
+            fi
+      - uses: actions/upload-artifact@v6
+        with:
+          name: asteride-freebsd-${{ github.sha }}
+          path: build/asteride-freebsd
+
   build-windows:
     runs-on: windows-latest
     steps:
@@ -73,7 +101,7 @@ jobs:
           path: build/asteride.exe
   
   release:
-    needs: [build-macos, build-windows]
+    needs: [build-macos, build-freebsd, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
@@ -83,6 +111,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: asteride-macos-${{ github.sha }}
+          path: release
+      - name: Download FreeBSD artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: asteride-freebsd-${{ github.sha }}
           path: release
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
@@ -96,6 +129,7 @@ jobs:
           draft: true
           files: |
             release/AsterIDE.dmg
+            release/asteride-freebsd
             release/asteride.exe
           name: AsterIDE ${{ github.ref_name }}
           fail_on_unmatched_files: true
