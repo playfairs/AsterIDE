@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fs;
 
 #[derive(Clone, Debug, PartialEq, Copy, Serialize, Deserialize)]
 pub enum SettingsCategory {
@@ -1073,8 +1074,9 @@ impl Settings {
                             .color(CherryBlossomTheme::ACCENT_PINK()),
                     );
                     ui.add_space(8.0);
+                    let version = env!("CARGO_PKG_VERSION");
                     ui.label(
-                        egui::RichText::new("AsterIDE v0.1.5")
+                        egui::RichText::new(format!("AsterIDE v{}", version))
                             .size(14.0)
                             .color(CherryBlossomTheme::TEXT_SECONDARY()),
                     );
@@ -1098,27 +1100,71 @@ impl Settings {
                     ui.add_space(24.0);
                     
                     ui.hyperlink_to(
-                        egui::RichText::new("🌐  Website")
+                        egui::RichText::new("Website")
                             .size(14.0)
                             .color(CherryBlossomTheme::ACCENT_PINK()),
                         "https://asteride.dev",
                     );
                     ui.add_space(8.0);
                     ui.hyperlink_to(
-                        egui::RichText::new("🐙  GitHub")
+                        egui::RichText::new("GitHub")
                             .size(14.0)
                             .color(CherryBlossomTheme::ACCENT_PINK()),
                         "https://github.com/Aster-IDE/AsterIDE",
                     );
                     ui.add_space(8.0);
                     ui.hyperlink_to(
-                        egui::RichText::new("📚  Documentation")
+                        egui::RichText::new("Documentation")
                             .size(14.0)
                             .color(CherryBlossomTheme::ACCENT_PINK()),
                         "https://docs.asteride.dev",
                     );
                     
                     ui.add_space(24.0);
+                    ui.separator();
+                    ui.add_space(16.0);
+                    
+                    ui.label(
+                        egui::RichText::new("Version Information")
+                            .size(14.0)
+                            .strong()
+                            .color(CherryBlossomTheme::TEXT_PRIMARY()),
+                    );
+                    ui.add_space(8.0);
+                    ui.label(
+                        egui::RichText::new(format!("Version: v{}", env!("CARGO_PKG_VERSION")))
+                            .size(12.0)
+                            .color(CherryBlossomTheme::TEXT_SECONDARY()),
+                    );
+                    ui.label(
+                        egui::RichText::new("Build: Release")
+                            .size(12.0)
+                            .color(CherryBlossomTheme::TEXT_SECONDARY()),
+                    );
+                    ui.label(
+                        egui::RichText::new("Rust Edition: 2024")
+                            .size(12.0)
+                            .color(CherryBlossomTheme::TEXT_SECONDARY()),
+                    );
+                    
+                    ui.add_space(16.0);
+                    ui.separator();
+                    ui.add_space(16.0);
+                    
+                    ui.label(
+                        egui::RichText::new("Acknowledgments")
+                            .size(14.0)
+                            .strong()
+                            .color(CherryBlossomTheme::TEXT_PRIMARY()),
+                    );
+                    ui.add_space(8.0);
+                    ui.label(
+                        egui::RichText::new("Built with egui, eframe, and the Rust ecosystem")
+                            .size(12.0)
+                            .color(CherryBlossomTheme::TEXT_SECONDARY()),
+                    );
+                    
+                    ui.add_space(16.0);
                     ui.separator();
                     ui.add_space(16.0);
                     

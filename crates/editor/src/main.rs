@@ -591,8 +591,9 @@ impl AsterIDE {
 
                         ui.menu_button("Help", |ui| {
                             if ui.button("About AsterIDE").clicked() {
+                                let version = env!("CARGO_PKG_VERSION");
                                 self.set_status(
-                                    "AsterIDE - Cherry Blossom Edition v0.1.0".to_string(),
+                                    format!("AsterIDE - Cherry Blossom Edition v{}", version),
                                     ctx,
                                 );
                                 ui.close();
