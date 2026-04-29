@@ -1128,23 +1128,28 @@ impl AsterIDE {
                         let (rect, response) =
                             ui.allocate_exact_size(egui::vec2(120.0, 30.0), egui::Sense::click());
 
+                        let radius = self.settings.corner_roundness.round() as u8;
                         let corner_radius = egui::CornerRadius {
-                            nw: self.settings.corner_roundness as u8,
-                            ne: self.settings.corner_roundness as u8,
+                            nw: radius,
+                            ne: radius,
                             sw: 0,
                             se: 0,
                         };
                         ui.painter().rect_filled(rect, corner_radius, bg_color);
 
                         if is_active {
-                            let radius = self.settings.corner_roundness;
-                            ui.painter().line_segment(
-                                [
-                                    rect.left_top() + egui::vec2(radius, 0.0),
-                                    rect.right_top() + egui::vec2(-radius, 0.0),
-                                ],
-                                egui::Stroke::new(2.0, CherryBlossomTheme::ACCENT_PINK()),
+                            let accent_height = (self.settings.corner_roundness * 0.3).clamp(2.0, 8.0);
+                            let accent_rect = egui::Rect::from_min_size(
+                                rect.left_top(),
+                                egui::vec2(rect.width(), accent_height),
                             );
+                            let accent_radius = egui::CornerRadius {
+                                nw: radius,
+                                ne: radius,
+                                sw: 0,
+                                se: 0,
+                            };
+                            ui.painter().rect_filled(accent_rect, accent_radius, CherryBlossomTheme::ACCENT_PINK());
                         }
 
                         let galley = ui.painter().layout(
@@ -1945,7 +1950,7 @@ fn main() -> eframe::Result<()> {
 
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1200.0, 800.0])
+            .with_inner_size([1450.0, 800.0])
             .with_min_inner_size([800.0, 600.0])
             .with_icon(icon),
         ..Default::default()
