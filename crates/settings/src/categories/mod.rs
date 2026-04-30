@@ -1,4 +1,3 @@
-pub mod about;
 pub mod appearance;
 pub mod editor;
 pub mod files;
@@ -8,7 +7,6 @@ pub mod scm;
 pub mod search;
 pub mod workbench;
 
-pub use about::*;
 pub use appearance::*;
 pub use editor::*;
 pub use files::*;
