@@ -61,4 +61,25 @@ To do so you can run this command, substituting with the app.
 ![settings-5.png](./assets/docs/app-demos/settings-5.png)
 
 ---
+
 Written in **Rust** with ❤️ by **Playfairs**.
+
+---
+
+# [**Aster**](https://github.com/Aster-IDE/Aster)
+
+**A Simpler Text Editor** written in **Rust**.
+
+---
+
+## What is **Aster** and what makes it different from **AsterIDE**?
+
+Well, to start I should mention what **AsterIDE** is, **AsterIDE** is an IDE, written in the Rust programming language, initially, it was created as a joke, and was not intended to be an IDE, nor a serious project, that changed and I decided to "lock in" and maintain it properly.
+
+So, what makes **Aster** different? Well, since my initial plan was to make a **SIMPLE** text editor hence the description of the editor ("A Simple Text Editor written in Rust"), but because I changed it into a full on IDE (Integrated Development Environment), I have today decided to make a simpler one, which follows the actual name of the project.
+
+## Which one should I use?
+
+**Choose AsterIDE if you're**: developing software, managing projects, or need advanced editing features.
+
+**Choose Aster if you're**: writing notes, documents, or prefer a simpler, more focused text editor.
