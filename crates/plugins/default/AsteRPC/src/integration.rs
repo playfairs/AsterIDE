@@ -1,0 +1,1 @@
+// for detection of Discord and also for routing the RPC to the User Client.

@@ -1,0 +1,1 @@
+For people who wish to create Plugins for AsterIDE, this folder "More" is where you will put them, you should name them using camelCase, but, plugins in default are made by the AsterIDE devs and should only be for plugins installed by default. May create a better plugin system such as a repo for all the plugins.
