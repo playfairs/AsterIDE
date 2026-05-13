@@ -1,85 +1,71 @@
-# AsterIDE 🌸
+                                AsterIDE 🌸
 
-**A Simple Text Editor** written in **Rust**, made for Femboys 🌸
+      A Simple Text Editor written in Rust, made for Femboys 🌸
 
----
+   Why AsterIDE?
 
-## Why AsterIDE?
+      I made AsterIDE as a fun side project with one thing in mind: to
+      make a silly text editor, based on the image below.
 
-I made AsterIDE as a fun side Project with one thing in mind, to make a silly Text Editor, based on the image below.
+      [femware.png](./assets/femware.png)
 
-![femware.png](./assets/femware.png)
+      NOTE:
+      AsterIDE will NOT look like the image above. It is simply a meme /
+      joke with some friends. It is not what the IDE will look like, but
+      it will be loosely inspired by it.
 
->[!NOTE]
-> AsterIDE will **NOT** look like the image above, it simply a meme / joke with some friends, it is not what the IDE will look like, but it will be based on it.
+   Installation.
 
-## Installation
+      macOS.
 
-### macOS
+         Apple could not verify "AsterIDE" is free of malware that may
+         harm your Mac or compromise your privacy.
 
-<details>
-<summary>Apple could not verify "AsterIDE" is free of Malware that may harm your Mac or compromise your privacy.</summary>
+         [error-example.png](./assets/docs/mac-install-fails/error-example.png)
 
-![effect](./assets/docs/mac-install-fails/error-example.png)
+         Because we do not have $100 / A$150 to spend on Apple Developer
+         certification (especially for a side project), this application
+         is not signed and will not be signed.
 
-Image of subject warning
+         To bypass Gatekeeper and run this app unsigned:
 
-Becasue we don't have $100/A$150 dollars to spend to become a recognized developer for Apple-
-especially for a side project, this application is not (and will not be) signed.
+         - Open System Settings (formerly System Preferences)
+         - Go to Privacy & Security
+         - Scroll to the bottom
+         - Re-open the application
+         - Click "Open Anyway"
 
-To bypass this Gatekeeper mechanism to run this app unsigned, you have to follow steps below
+         [todo.png](./assets/docs/mac-install-fails/todo.png)
 
-- Open System Settings (formerly System Preferences) 
-- Privacy & Security
-- Scroll all the way to the bottom
-- Re open up the app
-- Select "Open anyways"
+         If this does not work (e.g. the prompt does not appear), the
+         app may have extended attributes blocking execution.
 
-![task](./assets/docs/mac-install-fails/todo.png)
+         You can remove them with:
 
-if this doesn't help you, (e.g you cant follow steps as the prompts not showing)
-there might be some X-Attributes stuck on the app which needs to be wiped for Gatekeeper to be happy.
-To do so you can run this command, substituting with the app.
+         ```sh
+         xattr -c <path-to-.app>
+         ```
 
-```sh
-  xattr -c <location-to-.app-file>
-```
+      Written in Rust with love by Playfairs.
 
-</details>
+   Aster.
 
-## Screenshots
+      A Simpler Text Editor written in Rust.
 
-![home-1.png](./assets/docs/app-demos/home-1.png)
-![home-2.png](./assets/docs/app-demos/home-2.png)
-![home-3.png](./assets/docs/app-demos/home-3.png)
-![editor-1.png](./assets/docs/app-demos/editor-1.png)
-![search-1.png](./assets/docs/app-demos/search-1.png)
-![settings-1.png](./assets/docs/app-demos/settings-1.png)
-![settings-2.png](./assets/docs/app-demos/settings-2.png)
-![settings-3.png](./assets/docs/app-demos/settings-3.png)
-![settings-4.png](./assets/docs/app-demos/settings-4.png)
-![settings-5.png](./assets/docs/app-demos/settings-5.png)
+      https://github.com/Aster-IDE/Aster
 
----
+   What is Aster and what makes it different from AsterIDE?
 
-Written in **Rust** with ❤️ by **Playfairs**.
+      AsterIDE is a full IDE written in Rust. It started as a joke project
+      but evolved into a more serious development environment over time.
 
----
+      Aster, on the other hand, is a simpler text editor focused on speed,
+      minimalism, and writing text without extra complexity.
 
-# [**Aster**](https://github.com/Aster-IDE/Aster)
+   Which one should I use?
 
-**A Simpler Text Editor** written in **Rust**.
+      Use AsterIDE if you are developing software, managing projects, or
+      need advanced editing features.
 
----
-
-## What is **Aster** and what makes it different from **AsterIDE**?
-
-Well, to start I should mention what **AsterIDE** is, **AsterIDE** is an IDE, written in the Rust programming language, initially, it was created as a joke, and was not intended to be an IDE, nor a serious project, that changed and I decided to "lock in" and maintain it properly.
-
-So, what makes **Aster** different? Well, since my initial plan was to make a **SIMPLE** text editor hence the description of the editor ("A Simple Text Editor written in Rust"), but because I changed it into a full on IDE (Integrated Development Environment), I have today decided to make a simpler one, which follows the actual name of the project.
-
-## Which one should I use?
-
-**Choose AsterIDE if you're**: developing software, managing projects, or need advanced editing features.
-
-**Choose Aster if you're**: writing notes, documents, or prefer a simpler, more focused text editor.
+      Use Aster if you are writing notes, documents, or prefer a simpler,
+      more focused text editor.

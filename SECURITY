@@ -1,0 +1,82 @@
+                           AsterIDE Security Policy
+                              Version 1.0, May 2026
+
+                 TERMS AND CONDITIONS FOR SECURITY REPORTING
+
+   1. Definitions.
+
+      "Supported" shall mean a branch, release, or revision that receives
+      active maintenance, security patches, bug fixes, and compatibility
+      updates from the Maintainer.
+
+      "Semi Supported" shall mean a branch, release, or revision that may
+      receive limited maintenance, important fixes, or security patches at
+      the discretion of the Maintainer, without guarantee of continued
+      support or update frequency.
+
+      "Unsupported" shall mean a branch, release, or revision that no
+      longer receives maintenance, security updates, bug fixes, or official
+      support of any kind.
+
+      "Maintainer" shall mean the copyright owner, developer, contributor,
+      or authorized entity responsible for the maintenance, development,
+      security review, and distribution of the Work.
+
+      "Vulnerability" shall mean any weakness, flaw, unintended behavior,
+      misconfiguration, exposure, or defect that could negatively impact
+      the confidentiality, integrity, availability, stability, or security
+      of the Work or its users.
+
+      "Work" shall mean the software project, source code, documentation,
+      configuration files, assets, and associated materials distributed
+      under this repository.
+
+   2. Supported Versions.
+
+      Only the latest commits on the following branches are officially
+      maintained:
+
+      +----------------------+------------------+
+      | Branch               | Status           |
+      +----------------------+------------------+
+      | master               | Supported        |
+      | dev                  | Semi Supported   |
+      | archived / others    | Unsupported      |
+      +----------------------+------------------+
+
+   3. Reporting Vulnerabilities.
+
+      You shall not publicly disclose Vulnerabilities affecting the Work
+      prior to a fix, mitigation, or acknowledgement by the Maintainer.
+
+      Vulnerabilities should instead be reported privately through GitHub
+      Security Advisories or another Maintainer-approved communication
+      channel.
+
+      Reports should include, where possible:
+
+      (a) A description of the Vulnerability;
+
+      (b) Steps required to reproduce the issue;
+
+      (c) Affected branches, versions, or commits;
+
+      (d) Potential impact of exploitation; and
+
+      (e) Proof-of-concept material or technical details relevant to
+          reproduction or validation.
+
+   4. Disclosure Policy.
+
+      Following the release of a fix, mitigation, or advisory, details of
+      the Vulnerability may be publicly disclosed at the discretion of the
+      Maintainer.
+
+   5. Disclaimer.
+
+      The Work is provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+      CONDITIONS OF ANY KIND, either express or implied, including but not
+      limited to warranties of security, stability, reliability, or fitness
+      for a particular purpose.
+
+   END OF TERMS AND CONDITIONS
