@@ -61,53 +61,53 @@ impl ThemeColors {
     }
 
     pub const fn rose_pine() -> Self {
-        Self {
-            bg_darkest: Color32::from_rgb(31, 29, 46),    // Surface #1f1d2e (base color)
-            bg_dark: Color32::from_rgb(38, 35, 58),       // Overlay #26233a (containers)
-            bg_mid: Color32::from_rgb(33, 32, 46),        // Highlight Low #21202e (buttons)
-            bg_light: Color32::from_rgb(49, 46, 73),       // Highlight Low blended
-            bg_lighter: Color32::from_rgb(64, 61, 82),   // Highlight Med #403d52
-            border: Color32::from_rgb(82, 79, 103),       // Highlight High #524f67
-            text_primary: Color32::from_rgb(224, 222, 244),   // Text #e0def4
-            text_secondary: Color32::from_rgb(144, 140, 170), // Subtle #908caa
-            text_muted: Color32::from_rgb(110, 106, 134),     // Muted #6e6a86
-            accent_primary: Color32::from_rgb(196, 167, 231),  // Iris #c4a7e7 (special text, buttons)
-            accent_hot: Color32::from_rgb(196, 167, 231),      // Iris #c4a7e7
-            accent_light: Color32::from_rgb(156, 207, 216),    // Foam #9ccfd8
+        Self {						  // Rosé Pine Theme color palette
+            bg_darkest: Color32::from_rgb(31, 29, 46),    // surface #1f1d2e (base color)
+            bg_dark: Color32::from_rgb(38, 35, 58),       // iverlay #26233a (containers)
+            bg_mid: Color32::from_rgb(33, 32, 46),        // highlight Low #21202e (buttons)
+            bg_light: Color32::from_rgb(49, 46, 73),       // highlight Low blended
+            bg_lighter: Color32::from_rgb(64, 61, 82),   // highlight Med #403d52
+            border: Color32::from_rgb(82, 79, 103),       // highlight High #524f67
+            text_primary: Color32::from_rgb(224, 222, 244),   // text #e0def4
+            text_secondary: Color32::from_rgb(144, 140, 170), // subtle #908caa
+            text_muted: Color32::from_rgb(110, 106, 134),     // muted #6e6a86
+            accent_primary: Color32::from_rgb(196, 167, 231),  // iris #c4a7e7 (special text, buttons)
+            accent_hot: Color32::from_rgb(196, 167, 231),      // iris #c4a7e7
+            accent_light: Color32::from_rgb(156, 207, 216),    // foam #9ccfd8
         }
     }
 
     pub const fn rose_pine_moon() -> Self {
         Self {
-            bg_darkest: Color32::from_rgb(35, 33, 54),    // Base #232136
-            bg_dark: Color32::from_rgb(42, 39, 63),      // Surface #2a273f
-            bg_mid: Color32::from_rgb(57, 53, 82),       // Overlay #393552
-            bg_light: Color32::from_rgb(42, 40, 62),      // Highlight Low #2a283e
-            bg_lighter: Color32::from_rgb(68, 65, 90),    // Highlight Med #44415a
-            border: Color32::from_rgb(86, 82, 110),       // Highlight High #56526e
-            text_primary: Color32::from_rgb(224, 222, 244),   // Text #e0def4
-            text_secondary: Color32::from_rgb(144, 140, 170), // Subtle #908caa
-            text_muted: Color32::from_rgb(110, 106, 134),     // Muted #6e6a86
-            accent_primary: Color32::from_rgb(196, 167, 231),  // Iris #c4a7e7
-            accent_hot: Color32::from_rgb(196, 167, 231),      // Iris #c4a7e7
-            accent_light: Color32::from_rgb(156, 207, 216),    // Foam #9ccfd8
+            bg_darkest: Color32::from_rgb(35, 33, 54),    // base #232136
+            bg_dark: Color32::from_rgb(42, 39, 63),      // surface #2a273f
+            bg_mid: Color32::from_rgb(57, 53, 82),       // overlay #393552
+            bg_light: Color32::from_rgb(42, 40, 62),      // highlight Low #2a283e
+            bg_lighter: Color32::from_rgb(68, 65, 90),    // highlight Med #44415a
+            border: Color32::from_rgb(86, 82, 110),       // highlight High #56526e
+            text_primary: Color32::from_rgb(224, 222, 244),   // text #e0def4
+            text_secondary: Color32::from_rgb(144, 140, 170), // subtle #908caa
+            text_muted: Color32::from_rgb(110, 106, 134),     // muted #6e6a86
+            accent_primary: Color32::from_rgb(196, 167, 231),  // iris #c4a7e7
+            accent_hot: Color32::from_rgb(196, 167, 231),      // iris #c4a7e7
+            accent_light: Color32::from_rgb(156, 207, 216),    // foam #9ccfd8
         }
     }
 
     pub const fn rose_pine_dawn() -> Self {
         Self {
-            bg_darkest: Color32::from_rgb(250, 244, 237),   // Base #faf4ed
-            bg_dark: Color32::from_rgb(255, 250, 243),      // Surface #fffaf3
-            bg_mid: Color32::from_rgb(242, 233, 222),       // Overlay #f2e9e1
-            bg_light: Color32::from_rgb(223, 218, 211),     // Highlight Low #dfdad9
-            bg_lighter: Color32::from_rgb(206, 202, 195),   // Highlight Med #cecacd
-            border: Color32::from_rgb(189, 185, 177),       // Highlight High #bdb5b0
-            text_primary: Color32::from_rgb(87, 82, 91),      // Text #575279
-            text_secondary: Color32::from_rgb(121, 112, 122), // Subtle #797593
-            text_muted: Color32::from_rgb(152, 147, 165),     // Muted #9893a5
-            accent_primary: Color32::from_rgb(196, 167, 231),  // Iris #c4a7e7
-            accent_hot: Color32::from_rgb(196, 167, 231),      // Iris #c4a7e7
-            accent_light: Color32::from_rgb(156, 207, 216),    // Foam #9ccfd8
+            bg_darkest: Color32::from_rgb(250, 244, 237),   // base #faf4ed
+            bg_dark: Color32::from_rgb(255, 250, 243),      // surface #fffaf3
+            bg_mid: Color32::from_rgb(242, 233, 222),       // overlay #f2e9e1
+            bg_light: Color32::from_rgb(223, 218, 211),     // highlight Low #dfdad9
+            bg_lighter: Color32::from_rgb(206, 202, 195),   // highlight Med #cecacd
+            border: Color32::from_rgb(189, 185, 177),       // highlight High #bdb5b0
+            text_primary: Color32::from_rgb(87, 82, 91),      // text #575279
+            text_secondary: Color32::from_rgb(121, 112, 122), // subtle #797593
+            text_muted: Color32::from_rgb(152, 147, 165),     // muted #9893a5
+            accent_primary: Color32::from_rgb(196, 167, 231),  // iris #c4a7e7
+            accent_hot: Color32::from_rgb(196, 167, 231),      // iris #c4a7e7
+            accent_light: Color32::from_rgb(156, 207, 216),    // foam #9ccfd8
         }
     }
 
