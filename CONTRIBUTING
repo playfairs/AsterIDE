@@ -1,0 +1,99 @@
+                        Contributing to AsterIDE 🌸
+
+   Thanks for your interest in contributing to AsterIDE. This project aims
+   to remain minimal, clean, and well-structured—so all contributions
+   should follow the guidelines below.
+
+   1. Development Environment.
+
+      It is strongly preferred to develop within a Nix development shell.
+
+      This ensures:
+
+      (a) consistent dependencies
+      (b) reproducible builds
+      (c) avoidance of environment-specific issues
+
+      If a flake.nix or shell.nix is provided, use one of the following:
+
+         nix develop
+
+      or:
+
+         nix-shell
+
+   2. Commit Message Format.
+
+      All commits must follow this format:
+
+         type: <file + info>
+
+      Supported commit types:
+
+         create:  new files or features
+         update:  modifications to existing code
+         fix:     bug fixes
+         chore:   maintenance, cleanup, non-functional changes
+         remove:  deleting code or files
+         format:  formatting changes (no logic changes)
+         nix:     Nix configuration changes
+         rust:    Rust-specific improvements or refactors
+
+      Examples:
+
+         create: add buffer insert_char function
+         create: implement basic file loader
+
+         update: improve cursor movement logic
+         update: optimize buffer line insertion
+
+         fix: panic when inserting at end of line
+         fix: cursor overflow on empty buffer
+
+         chore: clean up unused imports
+         chore: reorganize project structure
+
+         remove: delete deprecated buffer module
+         remove: remove unused helper functions
+
+         format: apply rustfmt to entire project
+         format: fix indentation in editor module
+
+         nix: add dev shell with rust toolchain
+         nix: update flake inputs and dependencies
+
+         rust: refactor editor struct initialization
+         rust: improve error handling with Result
+
+   3. Code Style.
+
+      (a) Keep code minimal and readable
+      (b) Avoid unnecessary abstractions
+      (c) Prefer simple and explicit logic
+      (d) Maintain a clear separation between core and editor logic
+
+   4. Pull Requests.
+
+      (a) Keep pull requests focused and small
+      (b) Provide a clear description of changes and reasoning
+      (c) Ensure the project builds and runs before submitting
+
+   5. Testing (Future).
+
+      As the project evolves:
+
+      (a) tests will be required for core functionality
+      (b) avoid introducing breaking changes to existing behavior
+
+   6. Philosophy.
+
+      AsterIDE is built around:
+
+      (a) simplicity
+      (b) performance
+      (c) control
+
+      Any change that adds complexity must be justified and should include
+      consideration of simpler alternatives.
+
+   END OF CONTRIBUTING GUIDE
