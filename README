@@ -27,15 +27,8 @@
             - Re-open the application
             - Click "Open Anyway"
 
-
-            If this does not work (e.g. the prompt does not appear), the
-            app may have extended attributes blocking execution.
-
-            You can remove them with:
-
-            ```sh
-            xattr -c <path-to-.app>
-            ```
+            If you still need help, or still cannot install AsterIDE
+            you can read more information at https://docs.asteride.dev/troubleshooting
 
       Written in Rust with love by Playfairs.
 
