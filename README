@@ -14,7 +14,6 @@
             Apple could not verify "AsterIDE" is free of malware that may
             harm your Mac or compromise your privacy.
 
-            [error-example.png](./assets/docs/mac-install-fails/error-example.png)
 
             Because we do not have $100 / A$150 to spend on Apple Developer
             certification (especially for a side project), this application
@@ -28,7 +27,6 @@
             - Re-open the application
             - Click "Open Anyway"
 
-            [todo.png](./assets/docs/mac-install-fails/todo.png)
 
             If this does not work (e.g. the prompt does not appear), the
             app may have extended attributes blocking execution.
